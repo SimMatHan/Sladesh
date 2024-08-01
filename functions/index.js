@@ -8,9 +8,7 @@ const db = getFirestore();
 exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
-    const now = new Date();
-    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
-    const snapshot = await db.collection('requests').where('timestamp', '<', twelveHoursAgo.toISOString()).get();
+    const snapshot = await db.collection('requests').get();
 
     if (snapshot.empty) {
       console.log('No matching documents.');
@@ -23,7 +21,7 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
     });
 
     await batch.commit();
-    console.log('Deleted old requests.');
+    console.log('Deleted all requests.');
     return null;
   });
 

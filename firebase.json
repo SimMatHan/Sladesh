@@ -10,10 +10,11 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": []
+      "predeploy": [
+      ]
     }
   ],
-"hosting": {
+  "hosting": {
     "public": "build",
     "ignore": [
       "firebase.json",
