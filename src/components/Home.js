@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
 import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey, FaCoffee } from 'react-icons/fa';
 import './Home.css';
+import { db } from '../firebaseConfig';
 
 const EXPIRATION_TIME_MS = 30 * 1000; // 30 seconds for testing
 
@@ -33,8 +35,10 @@ const Home = ({ user, drinks, setDrinks }) => {
 
   const handleAddDrinkType = () => {
     if (drinkType && !drinks[drinkType]) {
-      setDrinks({ ...drinks, [drinkType]: 0 });
+      const newDrinks = { ...drinks, [drinkType]: 0 };
+      setDrinks(newDrinks);
       setDrinkType('');
+      saveDrinksToFirestore(newDrinks);
     }
   };
 
@@ -42,11 +46,20 @@ const Home = ({ user, drinks, setDrinks }) => {
     const newDrinks = { ...drinks, [type]: drinks[type] + 1 };
     setDrinks(newDrinks);
     localStorage.setItem('drinkData', JSON.stringify({ drinks: newDrinks, timestamp: new Date().getTime() }));
+    saveDrinksToFirestore(newDrinks);
+  };
+
+  const saveDrinksToFirestore = async (drinks) => {
+    try {
+      await setDoc(doc(db, 'drinks', user.uid), { drinks });
+    } catch (error) {
+      console.error('Error saving drinks to Firestore:', error);
+    }
   };
 
   return (
     <div className="home-container">
-      <h2>Welcome, {user.displayName || 'Guest'}</h2> {/* Use user.displayName */}
+      <h2>Welcome, {user.displayName || 'Guest'}</h2>
       <div className="drink-counter">
         Total Drinks: {Object.values(drinks).reduce((a, b) => a + b, 0)}
       </div>

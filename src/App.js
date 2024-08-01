@@ -14,18 +14,6 @@ const App = () => {
   const [drinks, setDrinks] = useState({});
 
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem('drinkData'));
-    if (storedData) {
-      const now = new Date().getTime();
-      const EXPIRATION_TIME_MS = 30 * 1000; // 30 seconds for testing
-
-      if (now - storedData.timestamp < EXPIRATION_TIME_MS) {
-        setDrinks(storedData.drinks);
-      } else {
-        localStorage.removeItem('drinkData');
-      }
-    }
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // Fetch the username from Firestore
@@ -33,6 +21,12 @@ const App = () => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setUser({ uid: user.uid, displayName: userData.username });
+
+          // Fetch the user's drinks from Firestore
+          const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
+          if (drinksDoc.exists()) {
+            setDrinks(drinksDoc.data().drinks);
+          }
         }
       } else {
         setUser(null);
@@ -78,6 +72,12 @@ const App = () => {
         const userData = userDoc.data();
         localStorage.setItem('username', userData.username);
         setUser({ uid: user.uid, displayName: userData.username });
+
+        // Fetch the user's drinks from Firestore
+        const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
+        if (drinksDoc.exists()) {
+          setDrinks(drinksDoc.data().drinks);
+        }
       }
     } catch (error) {
       alert('Failed to sign in. Please try again.');
