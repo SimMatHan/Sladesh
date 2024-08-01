@@ -3,7 +3,6 @@ import { createRequest, getRequests, getUsers } from '../services/requestService
 import './RequestForm.css'; // Import the CSS file
 
 const RequestForm = ({ user }) => {
-  const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('');
   const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
@@ -39,8 +38,9 @@ const RequestForm = ({ user }) => {
         throw new Error("Invalid sender information");
       }
 
+      const message = `You have been sladesh'ed by ${user.displayName}`;
+
       await createRequest({ sender: user, recipient, message });
-      setMessage('');
       setRecipient('');
       const fetchedRequests = await getRequests(user.displayName);
       setRequests(fetchedRequests);
@@ -52,15 +52,6 @@ const RequestForm = ({ user }) => {
   return (
     <div className="request-form-container">
       <form onSubmit={sendRequest} className="request-form">
-        <label className="form-label">
-          Message:
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="form-input"
-          />
-        </label>
         <label className="form-label">
           Select a user:
           <select
@@ -76,15 +67,14 @@ const RequestForm = ({ user }) => {
             ))}
           </select>
         </label>
-        <button type="submit" className="form-button">Send Request</button>
+        <button type="submit" className="form-button">Send Sladesh</button>
       </form>
       <div className="request-list-container">
         <h2>Requests</h2>
         <ul className="request-list">
-          {requests.map((request) => (
-            <li key={request.id} className="request-item">
-              <strong>From:</strong> {request.sender.username} <br />
-              <strong>Message:</strong> {request.message}
+          {requests.map((request, index) => (
+            <li key={index} className="request-item">
+              {request.message}
             </li>
           ))}
         </ul>
