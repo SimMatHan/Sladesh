@@ -5,6 +5,21 @@ const { getFirestore } = require('firebase-admin/firestore');
 admin.initializeApp();
 const db = getFirestore();
 
+exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    const batch = db.batch();
+    usersSnapshot.forEach(doc => {
+      batch.update(doc.ref, { lastSladesh: null });
+    });
+
+    await batch.commit();
+    console.log('Reset Sladesh count for all users.');
+    return null;
+  });
+
 exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {

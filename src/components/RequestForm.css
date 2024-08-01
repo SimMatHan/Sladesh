@@ -17,34 +17,51 @@
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
-.form-label {
+.loading-indicator {
   font-size: 16px;
-  margin-bottom: 8px;
-  color: #333333;
+  color: #0071e3;
+  margin-bottom: 20px;
 }
 
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
+.user-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.form-input:focus,
-.form-select:focus {
+.user-card {
+  border-radius: 10px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.user-card.selected {
   border-color: #0071e3;
-  outline: none;
+}
+
+.user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  text-align: center;
+  font-size: 18px;
+  color: #333;
 }
 
 .form-button {
@@ -63,9 +80,24 @@
   background-color: #005bb5;
 }
 
+.form-button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+.success-message {
+  color: green;
+  margin-top: 10px;
+}
+
 .request-list-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   margin-top: 20px;
   text-align: center; /* Center the text within the container */
 }
