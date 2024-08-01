@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import GlobalStyle from './globalStyles';
 import Header from './components/Header';
 import Home from './components/Home';
@@ -12,7 +12,6 @@ import { auth, db } from './firebaseConfig';
 const App = () => {
   const [user, setUser] = useState(null);
   const [drinks, setDrinks] = useState({});
-  const [checkedIn, setCheckedIn] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -21,10 +20,6 @@ const App = () => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setUser({ uid: user.uid, displayName: userData.username });
-
-          if (userData.checkedIn) {
-            setCheckedIn(true);
-          }
 
           const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
           if (drinksDoc.exists()) {
@@ -38,13 +33,6 @@ const App = () => {
 
     return () => unsubscribe();
   }, []);
-
-  const handleCheckIn = async () => {
-    if (user) {
-      await updateDoc(doc(db, 'users', user.uid), { checkedIn: true });
-      setCheckedIn(true);
-    }
-  };
 
   const handleReset = async () => {
     localStorage.removeItem('drinkData');
@@ -90,10 +78,6 @@ const App = () => {
         localStorage.setItem('username', userData.username);
         setUser({ uid: user.uid, displayName: userData.username });
 
-        if (userData.checkedIn) {
-          setCheckedIn(true);
-        }
-
         const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
         if (drinksDoc.exists()) {
           setDrinks(drinksDoc.data().drinks);
@@ -114,16 +98,13 @@ const App = () => {
       <GlobalStyle />
       <Router>
         <Header />
-        <Routes>
-          <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
-          <Route path="/requests" element={<RequestForm user={user} />} />
-        </Routes>
+        <div style={{ paddingBottom: '60px' }}> {/* Add padding to prevent overlap */}
+          <Routes>
+            <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
+            <Route path="/requests" element={<RequestForm user={user} />} />
+          </Routes>
+        </div>
       </Router>
-      {!checkedIn && (
-        <button onClick={handleCheckIn} style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
-          Check In
-        </button>
-      )}
     </>
   );
 };
