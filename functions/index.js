@@ -20,6 +20,21 @@ exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
+exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    const batch = db.batch();
+    usersSnapshot.forEach(doc => {
+      batch.update(doc.ref, { checkedIn: false });
+    });
+
+    await batch.commit();
+    console.log('Reset check-in status for all users.');
+    return null;
+  });
+
 exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {

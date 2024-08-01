@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import GlobalStyle from './globalStyles';
 import Header from './components/Header';
 import Home from './components/Home';
@@ -12,17 +12,20 @@ import { auth, db } from './firebaseConfig';
 const App = () => {
   const [user, setUser] = useState(null);
   const [drinks, setDrinks] = useState({});
+  const [checkedIn, setCheckedIn] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Fetch the username from Firestore
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setUser({ uid: user.uid, displayName: userData.username });
 
-          // Fetch the user's drinks from Firestore
+          if (userData.checkedIn) {
+            setCheckedIn(true);
+          }
+
           const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
           if (drinksDoc.exists()) {
             setDrinks(drinksDoc.data().drinks);
@@ -35,6 +38,13 @@ const App = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const handleCheckIn = async () => {
+    if (user) {
+      await updateDoc(doc(db, 'users', user.uid), { checkedIn: true });
+      setCheckedIn(true);
+    }
+  };
 
   const handleReset = async () => {
     localStorage.removeItem('drinkData');
@@ -53,11 +63,12 @@ const App = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save user information in Firestore
       await setDoc(doc(db, 'users', user.uid), {
         username,
         email,
         uid: user.uid,
+        checkedIn: false,
+        lastSladesh: null,
       });
 
       localStorage.setItem('username', username);
@@ -73,14 +84,16 @@ const App = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Fetch the username from Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
         localStorage.setItem('username', userData.username);
         setUser({ uid: user.uid, displayName: userData.username });
 
-        // Fetch the user's drinks from Firestore
+        if (userData.checkedIn) {
+          setCheckedIn(true);
+        }
+
         const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
         if (drinksDoc.exists()) {
           setDrinks(drinksDoc.data().drinks);
@@ -106,6 +119,11 @@ const App = () => {
           <Route path="/requests" element={<RequestForm user={user} />} />
         </Routes>
       </Router>
+      {!checkedIn && (
+        <button onClick={handleCheckIn} style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
+          Check In
+        </button>
+      )}
     </>
   );
 };

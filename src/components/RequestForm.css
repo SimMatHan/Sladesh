@@ -146,3 +146,38 @@ html, body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 15px;
 }
+
+.no-users-message {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.check-in-button,
+.refresh-button,
+.form-button {
+  background-color: #0071e3;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+  margin-bottom: 10px; /* Add margin to space out the buttons */
+}
+
+.check-in-button:hover,
+.refresh-button:hover,
+.form-button:hover {
+  background-color: #005bb5;
+}
+
+.check-in-button:disabled,
+.refresh-button:disabled,
+.form-button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
