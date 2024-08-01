@@ -1,19 +1,25 @@
-/* RequestForm.css */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
 .request-form-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 10px; /* Reduce padding for smaller screens */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: #f8f8f8;
-  min-height: 100vh;
+  height: calc(100vh - 60px); /* Adjust to fit within the remaining height */
   box-sizing: border-box;
+  overflow-y: hidden; /* Prevent vertical scrolling */
+  width: 100%; /* Ensure the container takes the full width */
 }
 
 .request-form {
   background: #ffffff;
-  padding: 20px;
+  padding: 10px; /* Reduce padding for smaller screens */
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -36,6 +42,8 @@
   gap: 10px;
   justify-content: center;
   margin-bottom: 20px;
+  overflow-y: auto; /* Enable scrolling when necessary */
+  max-height: 200px; /* Adjust max height to allow space for other elements */
 }
 
 .user-card {
