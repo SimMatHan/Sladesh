@@ -36,9 +36,16 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleReset = () => {
+  const handleReset = async () => {
     localStorage.removeItem('drinkData');
     setDrinks({});
+    if (user) {
+      try {
+        await setDoc(doc(db, 'drinks', user.uid), { drinks: {} });
+      } catch (error) {
+        console.error('Error resetting drinks in Firestore:', error);
+      }
+    }
   };
 
   const handleUserSubmit = async (email, password, username) => {
