@@ -93,9 +93,9 @@ const App = () => {
     <>
       <GlobalStyle />
       <Router>
-        <Header onReset={handleReset} />
+        <Header />
         <Routes>
-          <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} />} />
+          <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
           <Route path="/requests" element={<RequestForm user={user} />} />
         </Routes>
       </Router>

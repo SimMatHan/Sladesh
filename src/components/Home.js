@@ -18,7 +18,7 @@ const getIcon = (drinkType) => {
   return iconMap[drinkType.toLowerCase()] || <FaBeer />;
 };
 
-const Home = ({ user, drinks, setDrinks }) => {
+const Home = ({ user, drinks, setDrinks, onReset }) => {
   const [drinkType, setDrinkType] = useState('');
 
   useEffect(() => {
@@ -70,7 +70,10 @@ const Home = ({ user, drinks, setDrinks }) => {
         onChange={(e) => setDrinkType(e.target.value)}
         placeholder="Type of drink"
       />
-      <button className="drink-button" onClick={handleAddDrinkType}>Add Drink Type</button>
+      <div className="button-container">
+        <button className="drink-button" onClick={handleAddDrinkType}>Add Drink Type</button>
+        <button className="reset-button" onClick={onReset}>Reset Your Drink(s)</button>
+      </div>
       <ul className="drink-list">
         {Object.keys(drinks).map((type) => (
           <li key={type} className="drink-item">
