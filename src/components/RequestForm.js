@@ -3,6 +3,7 @@ import { createRequest, getRequests, getUsers } from '../services/requestService
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; // Import the CSS file
+import mrlahey from '../assets/mrlahey.gif'; // Import the GIF
 
 const RequestForm = ({ user }) => {
   const [requests, setRequests] = useState([]);
@@ -35,7 +36,6 @@ const RequestForm = ({ user }) => {
     const fetchUsers = async () => {
       try {
         const fetchedUsers = await getUsers();
-        console.log("Fetched users:", fetchedUsers);
         const filteredUsers = fetchedUsers.filter(u => u.username !== user.displayName);
         setUsers(filteredUsers);
       } catch (error) {
@@ -95,7 +95,7 @@ const RequestForm = ({ user }) => {
           return;
         }
 
-        const message = `You have been sladesh'ed by ${user.displayName}`;
+        const message = `Sladesh by ${user.displayName}`;
         await createRequest({ sender: user, recipient: selectedUser.username, message });
 
         await setDoc(userDocRef, { lastSladesh: now }, { merge: true });
@@ -147,13 +147,16 @@ const RequestForm = ({ user }) => {
           <div className="loading-indicator">Loading users...</div>
         ) : (
           <>
-            <button
-              onClick={handleCheckIn}
-              className="check-in-button"
-              disabled={checkedIn}
-            >
-              {checkedIn ? "You're checked in" : "Check In"}
-            </button>
+            <div className="button-group">
+              <button
+                onClick={handleCheckIn}
+                className="check-in-button"
+                disabled={checkedIn}
+              >
+                {checkedIn ? "You're checked in" : "Check In"}
+              </button>
+              <button onClick={refreshUsers} type="button" className="refresh-button">Refresh Users</button>
+            </div>
             <div className="user-cards-container">
               {users.length === 0 ? (
                 <p className="no-users-message">No users are currently checked in.</p>
@@ -171,7 +174,6 @@ const RequestForm = ({ user }) => {
                 ))
               )}
             </div>
-            <button onClick={refreshUsers} type="button" className="refresh-button">Refresh Users</button>
             <button type="submit" className="form-button" disabled={!selectedUser}>Send Sladesh</button>
             {error && <p className="error-message">{error}</p>}
             {success && <p className="success-message">{success}</p>}
@@ -186,7 +188,8 @@ const RequestForm = ({ user }) => {
           <ul className="request-list">
             {requests.map((request, index) => (
               <li key={index} className="request-item">
-                {request.message}
+                <img src={mrlahey} alt="Mr. Lahey" className="request-gif" />
+                <p>{request.message}</p>
               </li>
             ))}
           </ul>

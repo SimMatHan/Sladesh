@@ -16,7 +16,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px; /* Reduce padding for smaller screens */
+  padding: 20px; /* Increase padding for more space at the top */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--background-color);
   height: calc(100vh - 60px); /* Adjust to fit within the remaining height */
@@ -47,7 +47,7 @@ html, body {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
-  margin-bottom: 20px;
+  margin: 20px 0; /* Add margin for space above and below the container */
   overflow-y: auto; /* Enable scrolling when necessary */
   max-height: 200px; /* Adjust max height to allow space for other elements */
 }
@@ -59,17 +59,13 @@ html, body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 2px solid transparent;
+  background-color: var(--background-color); /* Ensure background color is set */
+  transition: border-color 0.2s ease; /* Transition for the border color */
 }
 
 .user-card.selected {
   border-color: var(--primary-color);
-}
-
-.user-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .user-info {
@@ -88,6 +84,7 @@ html, body {
   cursor: pointer;
   transition: background-color 0.3s ease;
   box-sizing: border-box;
+  margin-top: 20px; /* Add margin for space above the button */
 }
 
 .form-button:hover {
@@ -113,6 +110,9 @@ html, body {
   width: 100%;
   max-width: 600px;
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the items within the container */
   text-align: center; /* Center the text within the container */
 }
 
@@ -123,23 +123,38 @@ html, body {
 .request-list {
   list-style-type: none;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the items within the list */
+  width: 100%; /* Ensure the list takes the full width */
 }
 
 .request-item {
   background-color: var(--background-color);
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin: 10px 0;
-  padding: 15px;
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   font-size: 16px;
   color: var(--secondary-color);
+  overflow: hidden; /* Ensure the gif and text are clipped correctly */
+  max-width: 300px; /* Make the request item a bit smaller */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow to make it stand out */
+  width: 100%; /* Ensure the card takes the full width of its container */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.request-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+.request-item img {
+  display: block; /* Ensure the gif displays as a block element */
+  max-width: 100%; /* Fit within the container */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.request-item p {
+  margin: 0;
+  padding: 10px;
+  background-color: var(--background-color);
 }
 
 .no-requests-message {
@@ -160,6 +175,12 @@ html, body {
   margin-top: 20px;
 }
 
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0; /* Add margin for space above and below the buttons */
+}
+
 .check-in-button,
 .refresh-button,
 .form-button {
@@ -172,7 +193,6 @@ html, body {
   cursor: pointer;
   transition: background-color 0.3s ease;
   box-sizing: border-box;
-  margin-bottom: 10px; /* Add margin to space out the buttons */
 }
 
 .check-in-button:hover,

@@ -1,10 +1,10 @@
 :root {
   --primary-color: #d3d2c1;
   --secondary-color: #150e07;
-  --accent-color-1: #d4e653;
-  --accent-color-2: #87643d;
+  --accent-color-1: #87643d;
+  --accent-color-2: #d4e653;
   --background-color: #ffffff;
-}
+}#d4e653
 
 html, body {
   height: 100%;
@@ -46,10 +46,6 @@ html, body {
 
 .reset-button {
   background-color: var(--accent-color-2);
-}
-
-.reset-button:hover {
-  background-color: #c11616;
 }
 
 .main-button:hover {
@@ -146,9 +142,6 @@ html, body {
   background-color: var(--accent-color-1);
 }
 
-.drink-control-button.subtract-button:hover {
-  background-color: #c11616;
-}
 
 .intro-container {
   text-align: center;
