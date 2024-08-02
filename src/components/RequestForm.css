@@ -90,10 +90,22 @@ html, body {
 }
 
 .main-button:hover,
-.check-in-button:hover,
+.check-in-button:hover:not(:disabled),
 .refresh-button:hover,
-.form-button:hover {
+.form-button:hover:not(:disabled) {
   background-color: var(--accent-color-1);
+}
+
+.refresh-button {
+  background-color: var(--primary-color); /* Keeps its color */
+}
+
+.form-button {
+  background-color: var(--accent-color-1); /* --accent-color-1 as standard color */
+}
+
+.form-button:hover {
+  background-color: var(--accent-color-2); /* --accent-color-2 when pushed */
 }
 
 .reset-button {
@@ -104,9 +116,15 @@ html, body {
   background-color: var(--accent-color-1);
 }
 
-.form-button:disabled {
+.form-button:disabled,
+.check-in-button:disabled {
   background-color: #a0a0a0;
   cursor: not-allowed;
+}
+
+.form-button:disabled:hover,
+.check-in-button:disabled:hover {
+  background-color: #a0a0a0; /* Ensure the hover color stays the same as disabled color */
 }
 
 .error-message {
@@ -172,17 +190,17 @@ html, body {
 
 .no-requests-message {
   font-size: 16px;
-  color: var (--secondary-color);
+  color: var(--secondary-color);
   text-align: center;
   margin-top: 20px;
-  background-color: var (--background-color);
+  background-color: var(--background-color);
   border-radius: 10px;
   padding: 15px;
 }
 
 .no-users-message {
   font-size: 16px;
-  color: var (--secondary-color);
+  color: var(--secondary-color);
   text-align: center;
   margin-top: 20px;
 }
