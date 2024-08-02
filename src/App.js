@@ -7,7 +7,7 @@ import Header from './components/Header';
 import Home from './components/Home';
 import RequestForm from './components/RequestForm';
 import UserIdentification from './components/UserIdentification';
-import { auth, db } from './firebaseConfig';
+import { auth, db, messaging, getToken } from './firebaseConfig';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -15,20 +15,33 @@ const App = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUser({ uid: user.uid, displayName: userData.username });
+        if (user) {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                setUser({ uid: user.uid, displayName: userData.username });
 
-          const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
-          if (drinksDoc.exists()) {
-            setDrinks(drinksDoc.data().drinks);
-          }
+                const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
+                if (drinksDoc.exists()) {
+                    setDrinks(drinksDoc.data().drinks);
+                }
+
+                // Request permission to send notifications and get FCM token
+                try {
+                    const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY' });
+                    if (token) {
+                        console.log('FCM Token:', token);
+                        await setDoc(doc(db, 'users', user.uid), { fcmToken: token }, { merge: true });
+                    } else {
+                        console.log('No registration token available. Request permission to generate one.');
+                    }
+                } catch (err) {
+                    console.error('An error occurred while retrieving token. ', err);
+                }
+            }
+        } else {
+            setUser(null);
         }
-      } else {
-        setUser(null);
-      }
     });
 
     return () => unsubscribe();

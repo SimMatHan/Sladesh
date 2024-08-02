@@ -2,8 +2,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getMessaging, getToken } from 'firebase/messaging';
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDR1JwotZQVLSfOP6cXmmOA3Jg2Zi0_ghQ",
   authDomain: "sladeshapp.firebaseapp.com",
@@ -17,5 +17,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const messaging = getMessaging(app);
 
-export { db, auth };
+export { db, auth, messaging, getToken };

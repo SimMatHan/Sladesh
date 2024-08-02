@@ -66,3 +66,36 @@ exports.listUsers = functions.https.onCall(async (data, context) => {
 
   return users;
 });
+
+exports.sendSladeshNotification = functions.firestore
+    .document('requests/{requestId}')
+    .onCreate(async (snapshot, context) => {
+        const request = snapshot.data();
+        const recipientUsername = request.recipient;
+
+        // Get the recipient's user document
+        const usersCollection = admin.firestore().collection('users');
+        const userQuerySnapshot = await usersCollection.where('username', '==', recipientUsername).get();
+
+        if (!userQuerySnapshot.empty) {
+            const userDoc = userQuerySnapshot.docs[0];
+            const userData = userDoc.data();
+
+            if (userData.fcmToken) {
+                const message = {
+                    notification: {
+                        title: 'New Sladesh Request',
+                        body: `You have been sladesh'ed by ${request.sender.displayName}`,
+                    },
+                    token: userData.fcmToken,
+                };
+
+                try {
+                    await admin.messaging().send(message);
+                    console.log('Notification sent successfully');
+                } catch (error) {
+                    console.error('Error sending notification:', error);
+                }
+            }
+        }
+    });
