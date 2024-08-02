@@ -45,16 +45,16 @@ html, body {
 .user-cards-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 5px; /* Reduce the gap between user cards */
   justify-content: center;
-  margin: 20px 0;
+  margin: 10px 0; /* Adjust the margin for less space */
   overflow-y: auto;
   max-height: 200px;
 }
 
 .user-card {
-  border-radius: 10px;
-  padding: 10px 20px;
+  border-radius: 8px; /* Reduce border-radius */
+  padding: 5px 10px; /* Reduce padding */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +70,7 @@ html, body {
 
 .user-info {
   text-align: center;
-  font-size: 18px;
+  font-size: 14px; /* Reduce font size */
   color: var(--secondary-color);
 }
 
@@ -145,6 +145,8 @@ html, body {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  overflow-y: auto;
+  max-height: calc(100vh - 400px); /* Adjust the max height as needed */
 }
 
 .request-list-container h2 {
@@ -161,14 +163,14 @@ html, body {
 }
 
 .request-item {
-  background-color: var(--background-color);
+  background-color: var(--secondary-color); /* Set background to black */
   border-radius: 10px;
-  margin: 10px 0;
+  margin: 5px 0; /* Reduce margin */
   text-align: center;
-  font-size: 16px;
-  color: var(--secondary-color);
+  font-size: 14px; /* Reduce font size */
+  color: var(--primary-color); /* Set text color to primary color */
   overflow: hidden;
-  max-width: 300px;
+  max-width: 250px; /* Make the request item smaller */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
   display: flex;
@@ -184,8 +186,10 @@ html, body {
 
 .request-item p {
   margin: 0;
-  padding: 10px;
-  background-color: var(--background-color);
+  padding: 8px; /* Reduce padding */
+  width: 100%;
+  font-weight: 700;
+  background-color: var(--secondary-color); /* Ensure background color is black */
 }
 
 .no-requests-message {
@@ -199,10 +203,10 @@ html, body {
 }
 
 .no-users-message {
-  font-size: 16px;
+  font-size: 14px; /* Reduce font size */
   color: var(--secondary-color);
   text-align: center;
-  margin-top: 20px;
+  margin-top: 10px; /* Reduce margin */
 }
 
 .button-group {
