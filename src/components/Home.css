@@ -3,7 +3,7 @@
   --secondary-color: #150e07;
   --accent-color-1: #d4e653;
   --accent-color-2: #87643d;
-  --background-color: #f7f7f6;
+  --background-color: #ffffff;
 }
 
 html, body {
@@ -53,7 +53,7 @@ html, body {
 }
 
 .main-button:hover {
-  background-color: #b2b2b2;
+  background-color: var(--accent-color-1);
 }
 
 .drink-input {
@@ -100,11 +100,6 @@ html, body {
   align-items: center;
 }
 
-.drink-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
 .drink-icon {
   font-size: 20px;
   margin-bottom: 5px;
@@ -148,9 +143,31 @@ html, body {
 }
 
 .drink-control-button:hover {
-  background-color: #b2b2b2;
+  background-color: var(--accent-color-1);
 }
 
 .drink-control-button.subtract-button:hover {
   background-color: #c11616;
+}
+
+.intro-container {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 350px;
+  box-sizing: border-box;
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.intro-heading {
+  font-size: 24px;
+  color: var(--secondary-color);
+  margin-bottom: 10px;
+}
+
+.intro-text {
+  font-size: 16px;
+  color: var(--secondary-color);
 }

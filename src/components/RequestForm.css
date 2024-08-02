@@ -3,7 +3,7 @@
   --secondary-color: #150e07;
   --accent-color-1: #d4e653;
   --accent-color-2: #87643d;
-  --background-color: #f7f7f6;
+  --background-color: #ffffff;
 }
 
 html, body {
@@ -28,8 +28,6 @@ html, body {
 .request-form {
   background: var(--background-color);
   padding: 10px; /* Reduce padding for smaller screens */
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 600px;
   box-sizing: border-box;

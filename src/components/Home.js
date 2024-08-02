@@ -68,7 +68,10 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
 
   return (
     <div className="home-container">
-      <h2>Welcome, {user.displayName || 'Guest'}</h2>
+      <div className="intro-container">
+        <h1 className="intro-heading">Ready to get a buzz on and sladesh your friends? 🍹🥤</h1>
+        <p className="intro-text">Welcome to Sladesh, {user.displayName || 'Guest'}! Let's dive in and start keeping track of every sip!</p>
+      </div>
       <div className="drink-counter">
         Total Drinks: {Object.values(drinks).reduce((a, b) => a + b, 0)}
       </div>
