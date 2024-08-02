@@ -49,6 +49,15 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
     saveDrinksToFirestore(newDrinks);
   };
 
+  const handleSubtractDrink = (type) => {
+    if (drinks[type] > 0) {
+      const newDrinks = { ...drinks, [type]: drinks[type] - 1 };
+      setDrinks(newDrinks);
+      localStorage.setItem('drinkData', JSON.stringify({ drinks: newDrinks, timestamp: new Date().getTime() }));
+      saveDrinksToFirestore(newDrinks);
+    }
+  };
+
   const saveDrinksToFirestore = async (drinks) => {
     try {
       await setDoc(doc(db, 'drinks', user.uid), { drinks });
@@ -71,18 +80,23 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
         placeholder="Type of drink"
       />
       <div className="button-container">
-        <button className="drink-button" onClick={handleAddDrinkType}>Add Drink Type</button>
-        <button className="reset-button" onClick={onReset}>Reset Your Drink(s)</button>
+        <button className="main-button" onClick={handleAddDrinkType}>Add Drink Type</button>
+        <button className="main-button reset-button" onClick={onReset}>Reset Your Drink(s)</button>
       </div>
       <ul className="drink-list">
         {Object.keys(drinks).map((type) => (
           <li key={type} className="drink-item">
             <div className="drink-icon">{getIcon(type)}</div>
             <div className="drink-name">{type}</div>
-            <div className="drink-count">{drinks[type]}</div>
-            <button className="drink-button" onClick={() => handleAddDrink(type)}>
-              Add
-            </button>
+            <div className="drink-control">
+              <button className="drink-control-button subtract-button" onClick={() => handleSubtractDrink(type)}>
+                -
+              </button>
+              <div className="drink-count">{drinks[type]}</div>
+              <button className="drink-control-button add-button" onClick={() => handleAddDrink(type)}>
+                +
+              </button>
+            </div>
           </li>
         ))}
       </ul>

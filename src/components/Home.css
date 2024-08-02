@@ -23,7 +23,7 @@ html, body {
   color: #333;
 }
 
-.drink-button {
+.main-button {
   background-color: #0071e3;
   color: white;
   border: none;
@@ -37,21 +37,13 @@ html, body {
 
 .reset-button {
   background-color: #ff0000;
-  color: white;
-  border: none;
-  padding: 8px 15px; /* Adjust padding for smaller screens */
-  font-size: 14px; /* Adjust font size for smaller screens */
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin: 5px 0;
 }
 
 .reset-button:hover {
   background-color: #c11616;
 }
 
-.drink-button:hover {
+.main-button:hover {
   background-color: #005bb5;
 }
 
@@ -70,7 +62,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  max-width: 200px;
+  max-width: 300px;
   box-sizing: border-box;
 }
 
@@ -92,8 +84,11 @@ html, body {
   margin: 5px; /* Reduce margin for smaller screens */
   padding: 10px;
   text-align: center;
-  width: 80px; /* Make the cards smaller */
+  width: 100px; /* Make the cards smaller */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .drink-item:hover {
@@ -108,13 +103,45 @@ html, body {
 }
 
 .drink-name {
-  font-size: 12px; /* Make the text smaller */
+  font-size: 14px; /* Adjust the text size */
   margin: 5px 0;
   color: #333;
 }
 
+.drink-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%; /* Ensure buttons and count are spread out */
+}
+
 .drink-count {
-  font-size: 14px; /* Make the text smaller */
+  font-size: 14px; /* Adjust the text size */
   font-weight: bold;
   color: #333;
+  margin: 0 10px; /* Margin for spacing between buttons and count */
+}
+
+.drink-control-button {
+  background-color: #0071e3;
+  color: white;
+  border: none;
+  padding: 5px 10px; /* Smaller padding for smaller buttons */
+  font-size: 12px; /* Smaller font size */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 5px; /* Margin between buttons */
+}
+
+.drink-control-button.subtract-button {
+  background-color: #ff0000; /* Red color for the subtract button */
+}
+
+.drink-control-button:hover {
+  background-color: #005bb5;
+}
+
+.drink-control-button.subtract-button:hover {
+  background-color: #c11616;
 }
