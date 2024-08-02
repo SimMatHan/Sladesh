@@ -1,8 +1,8 @@
 :root {
   --primary-color: #d3d2c1;
   --secondary-color: #150e07;
-  --accent-color-1: #d4e653;
-  --accent-color-2: #87643d;
+  --accent-color-1: #87643d;
+  --accent-color-2: #d4e653;
   --background-color: #ffffff;
 }
 
@@ -16,18 +16,18 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px; /* Increase padding for more space at the top */
+  padding: 10px; /* Match the padding */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--background-color);
-  height: calc(100vh - 60px); /* Adjust to fit within the remaining height */
+  height: calc(100vh - 60px);
   box-sizing: border-box;
-  overflow-y: hidden; /* Prevent vertical scrolling */
-  width: 100%; /* Ensure the container takes the full width */
+  overflow-y: hidden;
+  width: 100%;
 }
 
 .request-form {
   background: var(--background-color);
-  padding: 10px; /* Reduce padding for smaller screens */
+  padding: 10px; /* Match the padding */
   width: 100%;
   max-width: 600px;
   box-sizing: border-box;
@@ -47,9 +47,9 @@ html, body {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
-  margin: 20px 0; /* Add margin for space above and below the container */
-  overflow-y: auto; /* Enable scrolling when necessary */
-  max-height: 200px; /* Adjust max height to allow space for other elements */
+  margin: 20px 0;
+  overflow-y: auto;
+  max-height: 200px;
 }
 
 .user-card {
@@ -60,8 +60,8 @@ html, body {
   justify-content: center;
   cursor: pointer;
   border: 2px solid transparent;
-  background-color: var(--background-color); /* Ensure background color is set */
-  transition: border-color 0.2s ease; /* Transition for the border color */
+  background-color: var(--background-color);
+  transition: border-color 0.2s ease;
 }
 
 .user-card.selected {
@@ -74,21 +74,34 @@ html, body {
   color: var(--secondary-color);
 }
 
+.main-button,
+.check-in-button,
+.refresh-button,
 .form-button {
   background-color: var(--primary-color);
   color: var(--secondary-color);
   border: none;
-  padding: 12px;
-  font-size: 16px;
+  padding: 8px 15px;
+  font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  box-sizing: border-box;
-  margin-top: 20px; /* Add margin for space above the button */
+  margin: 5px 0;
 }
 
+.main-button:hover,
+.check-in-button:hover,
+.refresh-button:hover,
 .form-button:hover {
-  background-color: #b2b2b2;
+  background-color: var(--accent-color-1);
+}
+
+.reset-button {
+  background-color: var(--accent-color-2);
+}
+
+.reset-button:hover {
+  background-color: var(--accent-color-1);
 }
 
 .form-button:disabled {
@@ -112,12 +125,12 @@ html, body {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center the items within the container */
-  text-align: center; /* Center the text within the container */
+  align-items: center;
+  text-align: center;
 }
 
 .request-list-container h2 {
-  text-align: center; /* Ensure the heading is centered */
+  text-align: center;
 }
 
 .request-list {
@@ -125,8 +138,8 @@ html, body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center the items within the list */
-  width: 100%; /* Ensure the list takes the full width */
+  align-items: center;
+  width: 100%;
 }
 
 .request-item {
@@ -136,19 +149,19 @@ html, body {
   text-align: center;
   font-size: 16px;
   color: var(--secondary-color);
-  overflow: hidden; /* Ensure the gif and text are clipped correctly */
-  max-width: 300px; /* Make the request item a bit smaller */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow to make it stand out */
-  width: 100%; /* Ensure the card takes the full width of its container */
+  overflow: hidden;
+  max-width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .request-item img {
-  display: block; /* Ensure the gif displays as a block element */
-  max-width: 100%; /* Fit within the container */
-  height: auto; /* Maintain aspect ratio */
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .request-item p {
@@ -159,18 +172,17 @@ html, body {
 
 .no-requests-message {
   font-size: 16px;
-  color: var(--secondary-color);
+  color: var (--secondary-color);
   text-align: center;
   margin-top: 20px;
-  background-color: var(--background-color);
+  background-color: var (--background-color);
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 15px;
 }
 
 .no-users-message {
   font-size: 16px;
-  color: var(--secondary-color);
+  color: var (--secondary-color);
   text-align: center;
   margin-top: 20px;
 }
@@ -178,32 +190,5 @@ html, body {
 .button-group {
   display: flex;
   gap: 10px;
-  margin: 20px 0; /* Add margin for space above and below the buttons */
-}
-
-.check-in-button,
-.refresh-button,
-.form-button {
-  background-color: var(--primary-color);
-  color: var(--secondary-color);
-  border: none;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  box-sizing: border-box;
-}
-
-.check-in-button:hover,
-.refresh-button:hover,
-.form-button:hover {
-  background-color: #b2b2b2;
-}
-
-.check-in-button:disabled,
-.refresh-button:disabled,
-.form-button:disabled {
-  background-color: #a0a0a0;
-  cursor: not-allowed;
+  margin: 20px 0;
 }
