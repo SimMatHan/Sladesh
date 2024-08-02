@@ -1,7 +1,15 @@
+:root {
+  --primary-color: #d3d2c1;
+  --secondary-color: #150e07;
+  --accent-color-1: #d4e653;
+  --accent-color-2: #87643d;
+  --background-color: #f7f7f6;
+}
+
 .header-container {
-  background-color: #f8f8f8;
+  background-color: var(--background-color);
   padding: 10px; /* Reduce padding for smaller screens */
-  color: #333;
+  color: var(--secondary-color);
   display: flex;
   justify-content: center; /* Center the nav-container */
   align-items: center;
@@ -27,12 +35,12 @@
 }
 
 .nav-links a {
-  color: #0071e3;
+  color: var(--primary-color);
   text-decoration: none;
   font-size: 14px; /* Adjust font size for smaller screens */
   transition: color 0.3s ease;
 }
 
 .nav-links a:hover {
-  color: #005bb5;
+  color: #b2b2b2;
 }
