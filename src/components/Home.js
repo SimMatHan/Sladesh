@@ -20,6 +20,7 @@ const getIcon = (drinkType) => {
 
 const Home = ({ user, drinks, setDrinks, onReset }) => {
   const [drinkType, setDrinkType] = useState('');
+  const [hasAddedDrink, setHasAddedDrink] = useState(false);
 
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem('drinkData'));
@@ -32,6 +33,11 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
       }
     }
   }, [setDrinks]);
+
+  useEffect(() => {
+    const totalDrinks = Object.values(drinks).reduce((a, b) => a + b, 0);
+    setHasAddedDrink(totalDrinks > 0);
+  }, [drinks]);
 
   const handleAddDrinkType = () => {
     if (drinkType && !drinks[drinkType]) {
@@ -68,9 +74,11 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
 
   return (
     <div className="home-container">
-      <div className="intro-container">
-        <h1 className="intro-heading">Ready to get a buzz on and sladesh your friends? 🍹🥤</h1>
-        <p className="intro-text">Welcome to Sladesh, {user.displayName || 'Guest'}! Let's dive in and start keeping track of every sip!</p>
+      <div className={`intro-container ${hasAddedDrink ? 'intro-container-minimized' : ''}`}>
+        <h1 className="intro-heading">
+          {hasAddedDrink ? 'LETS GOOO!' : 'Ready to get a buzz on and sladesh your friends? 🍹🥤'}
+        </h1>
+        {!hasAddedDrink && <p className="intro-text">Welcome to Sladesh, {user.displayName || 'Guest'}! Let's dive in and start keeping track of every sip!</p>}
       </div>
       <div className="drink-counter">
         Total Drinks: {Object.values(drinks).reduce((a, b) => a + b, 0)}

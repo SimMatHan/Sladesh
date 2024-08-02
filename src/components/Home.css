@@ -142,7 +142,6 @@ html, body {
   background-color: var(--accent-color-1);
 }
 
-
 .intro-container {
   text-align: center;
   width: 100%;
@@ -151,6 +150,11 @@ html, body {
   background-color: var(--background-color);
   padding: 20px;
   border-radius: 10px;
+  transition: all 0.3s ease; /* Add transition for smooth effect */
+}
+
+.intro-container-minimized {
+  padding: 10px; /* Reduced padding for minimized state */
 }
 
 .intro-heading {
