@@ -42,7 +42,7 @@ const Scoreboard = () => {
           <tr>
             <th>Username</th>
             <th>Total Drinks</th>
-            <th>Sladesh Count</th>
+            <th>Amout of Sladesh'ed</th>
           </tr>
         </thead>
         <tbody>
