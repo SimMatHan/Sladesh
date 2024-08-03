@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey, FaCoffee } from 'react-icons/fa';
 import './Home.css';
 import { db } from '../firebaseConfig';
@@ -20,7 +20,7 @@ const getIcon = (drinkType) => {
 
 const Home = ({ user, drinks, setDrinks, onReset }) => {
   const [drinkType, setDrinkType] = useState('');
-  const [hasAddedDrink, setHasAddedDrink] = useState(false);
+  const [totalDrinks, setTotalDrinks] = useState(0);
 
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem('drinkData'));
@@ -28,16 +28,26 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
       const now = new Date().getTime();
       if (now - storedData.timestamp < EXPIRATION_TIME_MS) {
         setDrinks(storedData.drinks);
+        setTotalDrinks(Object.values(storedData.drinks).reduce((a, b) => a + b, 0));
       } else {
         localStorage.removeItem('drinkData');
       }
     }
-  }, [setDrinks]);
 
-  useEffect(() => {
-    const totalDrinks = Object.values(drinks).reduce((a, b) => a + b, 0);
-    setHasAddedDrink(totalDrinks > 0);
-  }, [drinks]);
+    // Fetch user's totalDrinks from Firestore if exists
+    const fetchTotalDrinks = async () => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const totalDrinks = userData.totalDrinks || 0;
+          setTotalDrinks(totalDrinks);
+        }
+      }
+    };
+
+    fetchTotalDrinks();
+  }, [setDrinks, user]);
 
   const handleAddDrinkType = () => {
     if (drinkType && !drinks[drinkType]) {
@@ -65,23 +75,39 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
   };
 
   const saveDrinksToFirestore = async (drinks) => {
+    const totalDrinks = Object.values(drinks).reduce((a, b) => a + b, 0);
+    setTotalDrinks(totalDrinks); // Update the total drinks state
     try {
       await setDoc(doc(db, 'drinks', user.uid), { drinks });
+      await setDoc(doc(db, 'users', user.uid), { totalDrinks }, { merge: true });
     } catch (error) {
       console.error('Error saving drinks to Firestore:', error);
     }
   };
 
+  const handleReset = async () => {
+    const emptyDrinks = {};
+    setDrinks(emptyDrinks);
+    setTotalDrinks(0);
+    localStorage.removeItem('drinkData');
+    try {
+      await setDoc(doc(db, 'drinks', user.uid), { drinks: emptyDrinks });
+      await setDoc(doc(db, 'users', user.uid), { totalDrinks: 0 }, { merge: true });
+    } catch (error) {
+      console.error('Error resetting drinks in Firestore:', error);
+    }
+  };
+
   return (
     <div className="home-container">
-      <div className={`intro-container ${hasAddedDrink ? 'intro-container-minimized' : ''}`}>
+      <div className={`intro-container ${totalDrinks > 0 ? 'intro-container-minimized' : ''}`}>
         <h1 className="intro-heading">
-          {hasAddedDrink ? 'LETS GOOO!' : 'Ready to get a buzz on and sladesh your friends? 🍹🥤'}
+          {totalDrinks > 0 ? 'LETS GOOO!' : 'Ready to get a buzz on and sladesh your friends? 🍹🥤'}
         </h1>
-        {!hasAddedDrink && <p className="intro-text">Welcome to Sladesh, {user.displayName || 'Guest'}! Let's dive in and start keeping track of every sip!</p>}
+        {totalDrinks === 0 && <p className="intro-text">Welcome to Sladesh, {user.displayName || 'Guest'}! Let's dive in and start keeping track of every sip!</p>}
       </div>
       <div className="drink-counter">
-        Total Drinks: {Object.values(drinks).reduce((a, b) => a + b, 0)}
+        Total Drinks: {totalDrinks}
       </div>
       <input
         className="drink-input"
@@ -92,7 +118,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
       />
       <div className="button-container">
         <button className="main-button" onClick={handleAddDrinkType}>Add Drink Type</button>
-        <button className="main-button reset-button" onClick={onReset}>Reset Your Drink(s)</button>
+        <button className="main-button reset-button" onClick={handleReset}>Reset Your Drink(s)</button>
       </div>
       <ul className="drink-list">
         {Object.keys(drinks).map((type) => (

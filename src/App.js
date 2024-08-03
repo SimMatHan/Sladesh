@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Home from './components/Home';
 import RequestForm from './components/RequestForm';
 import UserIdentification from './components/UserIdentification';
+import Scoreboard from './components/Scoreboard';
 import { auth, db, messaging, getToken } from './firebaseConfig';
 
 const App = () => {
@@ -115,6 +116,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
             <Route path="/requests" element={<RequestForm user={user} />} />
+            <Route path="/scoreboard" element={<Scoreboard user={user} />} />
           </Routes>
         </div>
       </Router>

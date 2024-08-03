@@ -81,6 +81,10 @@ exports.sendSladeshNotification = functions.firestore
             const userDoc = userQuerySnapshot.docs[0];
             const userData = userDoc.data();
 
+            // Update sladeshCount
+            const sladeshCount = (userData.sladeshCount || 0) + 1;
+            await userDoc.ref.update({ sladeshCount });
+
             if (userData.fcmToken) {
                 const message = {
                     notification: {
@@ -99,3 +103,6 @@ exports.sendSladeshNotification = functions.firestore
             }
         }
     });
+
+
+
