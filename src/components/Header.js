@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import './Header.css';
 import CallMeEmoji from '../assets/CallMeEmoji.svg';
 import ClinkingBeerMugs from '../assets/ClinkingBeerMugs.svg';
-import ScoreboardIcon from '../assets/Scoreboard.svg'; // Add an icon for the scoreboard
+import ScoreboardIcon from '../assets/Scoreboard.svg';
+import OpenMailbox from '../assets/OpenMailbox.svg'; // Import the new icon
 
 const Header = () => {
   return (
@@ -17,7 +18,10 @@ const Header = () => {
             <img src={CallMeEmoji} alt="Sladesh" className="nav-icon" />
           </Link>
           <Link to="/scoreboard">
-            <img src={ScoreboardIcon} alt="Scoreboard" className="nav-icon" /> {/* Add link to Scoreboard */}
+            <img src={ScoreboardIcon} alt="Scoreboard" className="nav-icon" />
+          </Link>
+          <Link to="/sladesh-hub"> {/* Add link to Sladesh Hub */}
+            <img src={OpenMailbox} alt="Sladesh Hub" className="nav-icon" /> {/* Use the new icon */}
           </Link>
         </div>
       </div>

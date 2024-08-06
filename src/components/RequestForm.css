@@ -26,6 +26,28 @@ html, body {
   width: 100%;
 }
 
+.intro-container {
+  text-align: center;
+  width: 100%;
+  max-width: 350px;
+  box-sizing: border-box;
+  background-color: var(--background-color);
+  padding: 20px;
+  border-radius: 10px;
+  transition: all 0.3s ease; /* Add transition for smooth effect */
+}
+
+.intro-heading {
+  font-size: 24px;
+  color: var(--secondary-color);
+  margin-bottom: 10px;
+}
+
+.intro-text {
+  font-size: 16px;
+  color: var(--secondary-color);
+}
+
 .request-form {
   background: var(--background-color);
   padding: 10px;
@@ -131,71 +153,6 @@ html, body {
 .success-message {
   color: green;
   margin-top: 10px;
-}
-
-.request-list-container {
-  width: 100%;
-  max-width: 600px;
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  overflow-y: auto;
-  max-height: calc(100vh - 400px);
-}
-
-.request-list-container h2 {
-  text-align: center;
-}
-
-.request-list {
-  list-style-type: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.request-item {
-  background-color: var(--secondary-color);
-  border-radius: 10px;
-  margin: 5px 0;
-  text-align: center;
-  font-size: 14px;
-  color: var(--primary-color);
-  overflow: hidden;
-  max-width: 250px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.request-item img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-.request-item p {
-  margin: 0;
-  padding: 8px;
-  width: 100%;
-  font-weight: 700;
-  background-color: var(--secondary-color);
-}
-
-.no-requests-message {
-  font-size: 16px;
-  color: var(--secondary-color);
-  text-align: center;
-  margin-top: 20px;
-  background-color: var(--background-color);
-  border-radius: 10px;
-  padding: 15px;
 }
 
 .no-users-message {

@@ -8,6 +8,7 @@ import Home from './components/Home';
 import RequestForm from './components/RequestForm';
 import UserIdentification from './components/UserIdentification';
 import Scoreboard from './components/Scoreboard';
+import SladeshHub from './components/SladeshHub'; // Import the new component
 import { auth, db, messaging, getToken } from './firebaseConfig';
 
 const App = () => {
@@ -16,33 +17,33 @@ const App = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                setUser({ uid: user.uid, displayName: userData.username });
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUser({ uid: user.uid, displayName: userData.username });
 
-                const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
-                if (drinksDoc.exists()) {
-                    setDrinks(drinksDoc.data().drinks);
-                }
+          const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
+          if (drinksDoc.exists()) {
+            setDrinks(drinksDoc.data().drinks);
+          }
 
-                // Request permission to send notifications and get FCM token
-                try {
-                    const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY' });
-                    if (token) {
-                        console.log('FCM Token:', token);
-                        await setDoc(doc(db, 'users', user.uid), { fcmToken: token }, { merge: true });
-                    } else {
-                        console.log('No registration token available. Request permission to generate one.');
-                    }
-                } catch (err) {
-                    console.error('An error occurred while retrieving token. ', err);
-                }
+          // Request permission to send notifications and get FCM token
+          try {
+            const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY' });
+            if (token) {
+              console.log('FCM Token:', token);
+              await setDoc(doc(db, 'users', user.uid), { fcmToken: token }, { merge: true });
+            } else {
+              console.log('No registration token available. Request permission to generate one.');
             }
-        } else {
-            setUser(null);
+          } catch (err) {
+            console.error('An error occurred while retrieving token. ', err);
+          }
         }
+      } else {
+        setUser(null);
+      }
     });
 
     return () => unsubscribe();
@@ -112,11 +113,12 @@ const App = () => {
       <GlobalStyle />
       <Router>
         <Header />
-        <div style={{ paddingBottom: '60px' }}> {/* Add padding to prevent overlap */}
+        <div style={{ paddingBottom: '60px' }}>
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
             <Route path="/requests" element={<RequestForm user={user} />} />
             <Route path="/scoreboard" element={<Scoreboard user={user} />} />
+            <Route path="/sladesh-hub" element={<SladeshHub user={user} />} /> {/* Add this route */}
           </Routes>
         </div>
       </Router>

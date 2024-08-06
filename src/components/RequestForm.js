@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { createRequest, getRequests, getUsers } from '../services/requestService';
+import { createRequest, getUsers } from '../services/requestService';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; // Import the CSS file
-import mrlahey from '../assets/mrlahey.gif'; // Import the GIF
 
 const RequestForm = ({ user }) => {
-  const [requests, setRequests] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,15 +22,6 @@ const RequestForm = ({ user }) => {
       }
     };
 
-    const fetchRequests = async () => {
-      try {
-        const fetchedRequests = await getRequests(user.displayName || user.uid);
-        setRequests(fetchedRequests);
-      } catch (error) {
-        console.error("Failed to fetch requests:", error);
-      }
-    };
-
     const fetchUsers = async () => {
       try {
         const fetchedUsers = await getUsers();
@@ -46,7 +35,6 @@ const RequestForm = ({ user }) => {
     };
 
     fetchUserStatus();
-    fetchRequests();
     fetchUsers();
   }, [user]);
 
@@ -102,8 +90,6 @@ const RequestForm = ({ user }) => {
 
         setSuccess('Sladesh sent successfully!');
         setSelectedUser(null);
-        const fetchedRequests = await getRequests(user.displayName);
-        setRequests(fetchedRequests);
       } else {
         throw new Error("User document does not exist");
       }
@@ -142,6 +128,10 @@ const RequestForm = ({ user }) => {
 
   return (
     <div className="request-form-container">
+      <div className="intro-container">
+        <h1 className="intro-heading">Send a Sladesh</h1>
+        <p className="intro-text">Select a user to send a Sladesh to. Only users who are currently checked in will appear in the list.</p>
+      </div>
       <form onSubmit={sendRequest} className="request-form">
         {loading ? (
           <div className="loading-indicator">Loading users...</div>
@@ -180,21 +170,6 @@ const RequestForm = ({ user }) => {
           </>
         )}
       </form>
-      <div className="request-list-container">
-        <h2>Any Sladesh for you?!</h2>
-        {requests.length === 0 ? (
-          <p className="no-requests-message">You're safe! No Sladesh for you at the moment.</p>
-        ) : (
-          <ul className="request-list">
-            {requests.map((request, index) => (
-              <li key={index} className="request-item">
-                <img src={mrlahey} alt="Mr. Lahey" className="request-gif" />
-                <p>{request.message}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </div>
   );
 };
