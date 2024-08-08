@@ -14,6 +14,8 @@ import { auth, db, messaging, getToken } from './firebaseConfig';
 const App = () => {
   const [user, setUser] = useState(null);
   const [drinks, setDrinks] = useState({});
+  const [sladeshCount, setSladeshCount] = useState(0);
+  const [newMessages, setNewMessages] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -104,6 +106,18 @@ const App = () => {
     }
   };
 
+  const handleViewedSladeshHub = () => {
+    setNewMessages(false); // Mark that the user has viewed the messages
+    setSladeshCount(0); // Reset the Sladesh count
+  };
+
+  const handleNewRequests = (count) => {
+    if (count > 0) {
+      setNewMessages(true); // Indicate that there are new messages
+      setSladeshCount(count); // Set the Sladesh count
+    }
+  };
+
   if (!user) {
     return <UserIdentification onSubmit={handleUserSubmit} onSignIn={handleUserSignIn} />;
   }
@@ -112,13 +126,13 @@ const App = () => {
     <>
       <GlobalStyle />
       <Router>
-        <Header />
+        <Header sladeshCount={newMessages ? sladeshCount : 0} />
         <div style={{ paddingBottom: '60px' }}>
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
             <Route path="/requests" element={<RequestForm user={user} />} />
             <Route path="/scoreboard" element={<Scoreboard user={user} />} />
-            <Route path="/sladesh-hub" element={<SladeshHub user={user} />} /> {/* Add this route */}
+            <Route path="/sladesh-hub" element={<SladeshHub user={user} onViewed={handleViewedSladeshHub} onNewRequests={handleNewRequests} />} />
           </Routes>
         </div>
       </Router>

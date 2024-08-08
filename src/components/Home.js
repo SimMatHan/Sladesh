@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey, FaCoffee } from 'react-icons/fa';
+import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey } from 'react-icons/fa';
 import './Home.css';
 import { db } from '../firebaseConfig';
+import youSureAboutThatGif from '../assets/yousureaboutthat.gif'; // Import the GIF
 
 const EXPIRATION_TIME_MS = 30 * 1000; // 30 seconds for testing
 
 const iconMap = {
   beer: <FaBeer />,
   wine: <FaWineGlassAlt />,
-  cocktail: <FaCocktail />,
-  whiskey: <FaGlassWhiskey />,
-  coffee: <FaCoffee />,
+  drink: <FaCocktail />,
+  shots: <FaGlassWhiskey />,
 };
 
 const getIcon = (drinkType) => {
@@ -21,6 +21,7 @@ const getIcon = (drinkType) => {
 const Home = ({ user, drinks, setDrinks, onReset }) => {
   const [drinkType, setDrinkType] = useState('');
   const [totalDrinks, setTotalDrinks] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem('drinkData'));
@@ -49,18 +50,10 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
     fetchTotalDrinks();
   }, [setDrinks, user]);
 
-  const handleAddDrinkType = () => {
-    if (drinkType && !drinks[drinkType]) {
-      const newDrinks = { ...drinks, [drinkType]: 0 };
-      setDrinks(newDrinks);
-      setDrinkType('');
-      saveDrinksToFirestore(newDrinks);
-    }
-  };
-
   const handleAddDrink = (type) => {
-    const newDrinks = { ...drinks, [type]: drinks[type] + 1 };
+    const newDrinks = { ...drinks, [type]: (drinks[type] || 0) + 1 };
     setDrinks(newDrinks);
+    setDrinkType(''); // Reset the drinkType selection
     localStorage.setItem('drinkData', JSON.stringify({ drinks: newDrinks, timestamp: new Date().getTime() }));
     saveDrinksToFirestore(newDrinks);
   };
@@ -98,6 +91,17 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
     }
   };
 
+  const confirmReset = () => {
+    setShowPopup(true);
+  };
+
+  const handlePopupResponse = (response) => {
+    if (response === 'yes') {
+      handleReset();
+    }
+    setShowPopup(false);
+  };
+
   return (
     <div className="home-container">
       <div className={`intro-container ${totalDrinks > 0 ? 'intro-container-minimized' : ''}`}>
@@ -109,16 +113,20 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
       <div className="drink-counter">
         Total Drinks: {totalDrinks}
       </div>
-      <input
-        className="drink-input"
-        type="text"
+      <select
+        className="drink-select"
         value={drinkType}
         onChange={(e) => setDrinkType(e.target.value)}
-        placeholder="Type of drink"
-      />
+      >
+        <option value="">Select a drink</option>
+        <option value="beer">Beer</option>
+        <option value="wine">Wine</option>
+        <option value="drink">Drink</option>
+        <option value="shots">Shots</option>
+      </select>
       <div className="button-container">
-        <button className="main-button" onClick={handleAddDrinkType}>Add Drink Type</button>
-        <button className="main-button reset-button" onClick={handleReset}>Reset Your Drink(s)</button>
+        <button className="main-button" onClick={() => handleAddDrink(drinkType)} disabled={!drinkType}>Add Drink</button>
+        <button className="main-button reset-button" onClick={confirmReset}>Reset Your Drink(s)</button>
       </div>
       <ul className="drink-list">
         {Object.keys(drinks).map((type) => (
@@ -137,6 +145,18 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
           </li>
         ))}
       </ul>
+      {showPopup && (
+        <div className="popup-backdrop">
+          <div className="popup">
+            <div className="popup-content">
+              <img src={youSureAboutThatGif} alt="Are you sure about that?" className="popup-gif" />
+              <p> </p>
+              <button className="popup-button yes-button" onClick={() => handlePopupResponse('yes')}>Yes!</button>
+              <button className="popup-button" onClick={() => handlePopupResponse('no')}>No!</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

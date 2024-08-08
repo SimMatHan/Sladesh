@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getRequests } from '../services/requestService';
-import './SladeshHub.css'; // Create and import a CSS file for SladeshHub
-import mrlahey from '../assets/mrlahey.gif'; // Import the GIF
+import './SladeshHub.css';
+import mrlahey from '../assets/mrlahey.gif';
 
-const SladeshHub = ({ user }) => {
+const SladeshHub = ({ user, onViewed, onNewRequests }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,6 +12,7 @@ const SladeshHub = ({ user }) => {
       try {
         const fetchedRequests = await getRequests(user.displayName || user.uid);
         setRequests(fetchedRequests);
+        onNewRequests(fetchedRequests.length); // Indicate the number of new requests immediately
       } catch (error) {
         console.error("Failed to fetch requests:", error);
       } finally {
@@ -20,7 +21,11 @@ const SladeshHub = ({ user }) => {
     };
 
     fetchRequests();
-  }, [user]);
+  }, [user, onNewRequests]);
+
+  useEffect(() => {
+    onViewed(); // Mark as viewed when the user enters the hub
+  }, [onViewed]);
 
   return (
     <div className="sladesh-hub-container">

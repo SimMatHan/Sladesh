@@ -82,6 +82,20 @@ html, body {
   max-height: calc(100vh - 300px);
 }
 
+.drink-select {
+  padding: 10px;
+  font-size: 14px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+  background-color: var(--background-color);
+  color: var(--secondary-color);
+}
+
+
 .drink-item {
   background-color: var(--background-color);
   border-radius: 10px;
@@ -166,4 +180,63 @@ html, body {
 .intro-text {
   font-size: 16px;
   color: var(--secondary-color);
+}
+
+.popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.popup {
+  background-color: var(--background-color);
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 300px;
+}
+
+.popup-gif {
+  width: 100%;
+  max-width: 200px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+
+.popup-content {
+  text-align: center;
+}
+
+.popup-button {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.popup-button:hover {
+  background-color: var(--accent-color-1);
+}
+
+.popup-button.yes-button {
+  background-color: var(--accent-color-2);
+}
+
+.popup-button.yes-button:hover {
+  background-color: var(--accent-color-1);
 }
