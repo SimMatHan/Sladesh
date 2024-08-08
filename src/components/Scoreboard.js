@@ -9,17 +9,24 @@ const Scoreboard = () => {
   const fetchUsers = async () => {
     const querySnapshot = await getDocs(collection(db, 'users'));
     const usersList = [];
+    const currentTime = new Date();
+
     querySnapshot.forEach((doc) => {
       const userData = doc.data();
       console.log('User Data:', userData); // Debug log
       if (userData.checkedIn) { // Only include checked-in users
+        const lastSladeshTimestamp = userData.lastSladesh ? new Date(userData.lastSladesh.seconds * 1000) : null;
+        const sladeshUsed = lastSladeshTimestamp ? (currentTime - lastSladeshTimestamp) / (1000 * 60 * 60) < 12 : false;
+
         usersList.push({
           username: userData.username,
           totalDrinks: userData.totalDrinks || 0,
           sladeshCount: userData.sladeshCount || 0,
+          sladeshUsed: sladeshUsed,
         });
       }
     });
+
     console.log('Users List before sorting:', usersList); // Debug log
 
     // Sort users by totalDrinks in descending order
@@ -43,6 +50,7 @@ const Scoreboard = () => {
             <th>Username</th>
             <th>Total Drinks</th>
             <th>Amout of Sladesh'ed</th>
+            <th>Sladesh Used</th>
           </tr>
         </thead>
         <tbody>
@@ -52,11 +60,12 @@ const Scoreboard = () => {
                 <td>{user.username}</td>
                 <td>{user.totalDrinks}</td>
                 <td>{user.sladeshCount}</td>
+                <td>{user.sladeshUsed ? 'Yes' : 'No'}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="3">No users checked in</td>
+              <td colSpan="4">No users checked in</td>
             </tr>
           )}
         </tbody>

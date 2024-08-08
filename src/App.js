@@ -15,7 +15,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [drinks, setDrinks] = useState({});
   const [sladeshCount, setSladeshCount] = useState(0);
-  const [newMessages, setNewMessages] = useState(false);
+  const [hasViewedHub, setHasViewedHub] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -107,13 +107,13 @@ const App = () => {
   };
 
   const handleViewedSladeshHub = () => {
-    setNewMessages(false); // Mark that the user has viewed the messages
+    setHasViewedHub(true); // Mark that the user has viewed the Sladesh Hub
     setSladeshCount(0); // Reset the Sladesh count
   };
 
   const handleNewRequests = (count) => {
     if (count > 0) {
-      setNewMessages(true); // Indicate that there are new messages
+      setHasViewedHub(false); // Mark that there are new requests
       setSladeshCount(count); // Set the Sladesh count
     }
   };
@@ -126,7 +126,7 @@ const App = () => {
     <>
       <GlobalStyle />
       <Router>
-        <Header sladeshCount={newMessages ? sladeshCount : 0} />
+        <Header sladeshCount={!hasViewedHub ? sladeshCount : 0} />
         <div style={{ paddingBottom: '60px' }}>
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />

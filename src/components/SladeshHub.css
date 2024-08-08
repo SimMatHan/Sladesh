@@ -81,14 +81,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px;
   }
   
   .request-item img {
     display: block;
     max-width: 100%;
     height: auto;
-    margin-bottom: 10px;
   }
   
   .request-item p {
@@ -97,7 +95,7 @@
     width: 100%;
     font-weight: 700;
     background-color: var(--secondary-color);
-    color: var(--primary-color);
+    color: var(--background-color);
     border-radius: 5px;
   }
   

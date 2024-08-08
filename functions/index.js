@@ -11,14 +11,17 @@ exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
     const usersSnapshot = await db.collection('users').get();
 
     const batch = db.batch();
+    const resetTimestamp = admin.firestore.Timestamp.fromDate(new Date());
+
     usersSnapshot.forEach(doc => {
-      batch.update(doc.ref, { lastSladesh: null });
+      batch.update(doc.ref, { lastSladesh: resetTimestamp });
     });
 
     await batch.commit();
     console.log('Reset Sladesh count for all users.');
     return null;
   });
+
 
 exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')

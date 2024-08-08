@@ -1,103 +1,114 @@
 :root {
-    --primary-color: #d3d2c1;
-    --secondary-color: #150e07;
-    --accent-color-1: #87643d;
-    --accent-color-2: #d4e653;
-    --background-color: #ffffff;
-  }
-  
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background-color: var(--background-color);
-  }
-  
-  .scoreboard-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--background-color);
-    box-sizing: border-box;
-    overflow-y: hidden;
-    width: 100%;
-  }
-  
-  .scoreboard-table {
-    width: 100%;
-    max-width: 600px;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
+  --primary-color: #d3d2c1;
+  --secondary-color: #150e07;
+  --accent-color-1: #87643d;
+  --accent-color-2: #d4e653;
+  --background-color: #ffffff;
+  --header-bg-color: #f8f9fa;
+  --row-hover-bg-color: #f1f3f5;
+  --font-color: #343a40;
+  --font-size: 14px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+}
+
+.scoreboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--background-color);
+  box-sizing: border-box;
+  overflow-y: hidden;
+  width: 100%;
+}
+
+.scoreboard-table {
+  width: 100%;
+  max-width: 800px;
+  border-collapse: collapse;
+  border-radius: 5px;
+  margin-top: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.scoreboard-table th, .scoreboard-table td {
+  padding: 12px 15px;
+  text-align: left;
+  color: var(--font-color);
+  font-size: var(--font-size);
+}
+
+.scoreboard-table th {
+  background-color: var(--header-bg-color);
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.scoreboard-table tr {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.scoreboard-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.scoreboard-table tr:hover {
+  background-color: var(--row-hover-bg-color);
+}
+
+.main-button {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  padding: 8px 15px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 5px 0;
+}
+
+.main-button:hover {
+  background-color: var(--accent-color-1);
+}
+
+.main-button:active {
+  background-color: var(--accent-color-2);
+}
+
+.refresh-button {
+  margin-bottom: 20px;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
   .scoreboard-table th, .scoreboard-table td {
-    border: 1px solid var(--primary-color);
     padding: 8px;
-    text-align: left;
-    color: var(--secondary-color);
+    font-size: 12px;
   }
-  
-  .scoreboard-table th {
-    background-color: var(--primary-color);
-  }
-  
-  .scoreboard-table tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-  
-  .scoreboard-table tr:hover {
-    background-color: var(--accent-color-1);
-  }
-  
+
   .main-button {
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
-    border: none;
-    padding: 8px 15px;
-    font-size: 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin: 5px 0;
+    font-size: 12px;
+    padding: 6px 10px;
   }
-  
-  .main-button:hover {
-    background-color: var(--accent-color-1);
-  }
-  
-  .main-button:active {
-    background-color: var(--accent-color-2);
-  }
-  
+
   .refresh-button {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
-  
-  /* Responsive styles */
-  @media (max-width: 600px) {
-    .scoreboard-table th, .scoreboard-table td {
-      padding: 6px;
-      font-size: 12px;
-    }
-  
-    .main-button {
-      font-size: 12px;
-      padding: 6px 10px;
-    }
-  
-    .refresh-button {
-      margin-bottom: 10px;
-    }
-  
-    .scoreboard-table {
-      font-size: 14px;
-      max-width: 100%;
-    }
-  
-    .scoreboard-container {
-      padding: 5px;
-    }
+
+  .scoreboard-table {
+    font-size: 14px;
+    max-width: 100%;
   }
-  
+
+  .scoreboard-container {
+    padding: 25px;
+  }
+}
