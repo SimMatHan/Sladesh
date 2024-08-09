@@ -42,6 +42,8 @@ html, body {
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 5px 0;
+  width: 100%;
+  max-width: 300px;
 }
 
 .reset-button {
@@ -74,12 +76,13 @@ html, body {
 .drink-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between; /* Ensure items align with buttons */
   list-style-type: none;
   padding: 0;
   width: 100%;
+  max-width: 300px; /* Align with the buttons */
   overflow-y: auto;
-  max-height: calc(100vh - 300px);
+  margin-top: 20px;
 }
 
 .drink-select {
@@ -95,29 +98,29 @@ html, body {
   color: var(--secondary-color);
 }
 
-
 .drink-item {
   background-color: var(--background-color);
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 5px;
-  padding: 10px;
+  margin: 10px 0; /* Adjust margin for spacing */
+  padding: 20px;
   text-align: center;
   width: 100px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .drink-icon {
-  font-size: 20px;
-  margin-bottom: 5px;
+  font-size: 24px;
+  margin-bottom: 10px;
   color: var(--primary-color);
 }
 
 .drink-name {
-  font-size: 14px;
+  font-size: 16px;
   margin: 5px 0;
   color: var(--secondary-color);
 }
@@ -130,7 +133,7 @@ html, body {
 }
 
 .drink-count {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   color: var(--secondary-color);
   margin: 0 10px;
@@ -141,7 +144,7 @@ html, body {
   color: var(--secondary-color);
   border: none;
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -164,11 +167,11 @@ html, body {
   background-color: var(--background-color);
   padding: 20px;
   border-radius: 10px;
-  transition: all 0.3s ease; /* Add transition for smooth effect */
+  transition: all 0.3s ease;
 }
 
 .intro-container-minimized {
-  padding: 10px; /* Reduced padding for minimized state */
+  padding: 10px;
 }
 
 .intro-heading {
@@ -211,7 +214,6 @@ html, body {
   margin-bottom: 10px;
   border-radius: 8px;
 }
-
 
 .popup-content {
   text-align: center;

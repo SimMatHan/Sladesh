@@ -8,43 +8,39 @@
 
 .header-container {
   background-color: var(--background-color);
-  padding: 10px 10px 25px 10px; /* Reduce padding for smaller screens */
+  padding: 10px 10px 25px 10px;
   color: var(--secondary-color);
   display: flex;
-  border-top: 1px solid #ddd; /* Add a border at the top */
-  justify-content: center; /* Center the nav-container */
+  border-top: 1px solid #ddd;
+  justify-content: center;
   align-items: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;
   position: fixed;
   bottom: 0;
   width: 100%;
-  z-index: 1000; /* Ensure the header is above other content */
+  z-index: 1000;
 }
 
 .nav-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%; /* Ensure the container takes the full width */
+  width: 100%;
 }
 
 .nav-links {
   display: flex;
-  gap: 50px; /* Gap between links */
-}
-
-.nav-links a {
-  text-decoration: none;
-  transition: color 0.3s ease;
-  display: flex;
-  align-items: center;
-  color: var(--primary-color); /* Ensure links have the primary color */
+  gap: 35px;
 }
 
 .nav-icon {
-  width: 48px; /* Adjust size as needed */
-  height: 48px; /* Adjust size as needed */
+  width: 40px;
+  height: 40px;
+}
+
+.nav-icon.filled {
+  filter: brightness(1.2) saturate(1.5) hue-rotate(15deg);
 }
 
 .nav-icon-container {
@@ -67,6 +63,14 @@
   font-weight: bold;
 }
 
-.nav-links a:hover .nav-icon {
-  opacity: 0.7; /* Change the opacity on hover for a visual effect */
+/* Responsive styles */
+@media (max-width: 600px) {
+  .nav-links {
+    gap: 35px;
+  }
+
+  .nav-icon {
+    width: 32px;
+    height: 32px;
+  }
 }

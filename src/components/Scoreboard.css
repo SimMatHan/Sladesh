@@ -101,6 +101,7 @@ html, body {
 
   .refresh-button {
     margin-bottom: 10px;
+    width: 100px;
   }
 
   .scoreboard-table {
