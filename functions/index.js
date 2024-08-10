@@ -69,3 +69,104 @@ exports.listUsers = functions.https.onCall(async (data, context) => {
 
   return users;
 });
+
+exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    const batch = db.batch();
+    const now = new Date();
+
+    usersSnapshot.forEach(doc => {
+      const data = doc.data();
+      const lastReset = data.lastSladeshTimestamp ? data.lastSladeshTimestamp.toDate() : new Date(now.getTime() - 12 * 60 * 60 * 1000);
+      const timeSinceLastReset = now.getTime() - lastReset.getTime();
+      const isWithin12Hours = timeSinceLastReset <= 12 * 60 * 60 * 1000;
+
+      if (isWithin12Hours) {
+        if (!data.highestDrinksIn12Hours || data.totalDrinks > data.highestDrinksIn12Hours) {
+          batch.update(doc.ref, { highestDrinksIn12Hours: data.totalDrinks });
+        }
+      }
+    });
+
+    await batch.commit();
+    console.log('Updated highest drinks in 12 hours for all users.');
+    return null;
+  });
+
+exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    let totalBeer = 0;
+    let totalWine = 0;
+    let totalShots = 0;
+    let totalDrinks = 0;
+
+    usersSnapshot.forEach(doc => {
+      const data = doc.data();
+      totalBeer += data.beer || 0;
+      totalWine += data.wine || 0;
+      totalShots += data.shots || 0;
+      totalDrinks += data.drinks || 0;
+    });
+
+    // Update the totalDrinks document in the statistics collection
+    const statsRef = db.collection('statistics').doc('totalDrinks');
+    await statsRef.set({
+      beer: totalBeer,
+      wine: totalWine,
+      shots: totalShots,
+      drinks: totalDrinks,
+    });
+
+    console.log('Aggregated beverage data and updated statistics/totalDrinks.');
+    return null;
+  });
+
+  exports.updateUserStatistics = functions.pubsub.schedule('0 0,12 * * *')
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    let mostSladeshedUser = { username: '', totalSladeshes: 0 };
+    let mostCheckedInUser = { username: '', totalCheckIns: 0 };
+
+    usersSnapshot.forEach(doc => {
+      const data = doc.data();
+
+      if (data.totalSladesh > mostSladeshedUser.totalSladeshes) {
+        mostSladeshedUser = {
+          username: data.username,
+          totalSladeshes: data.totalSladesh,
+        };
+      }
+
+      if (data.checkIns > mostCheckedInUser.totalCheckIns) {
+        mostCheckedInUser = {
+          username: data.username,
+          totalCheckIns: data.checkIns,
+        };
+      }
+    });
+
+    // Update the mostSladeshedUser document in the statistics collection
+    await db.collection('statistics').doc('mostSladeshedUser').set({
+      username: mostSladeshedUser.username,
+      totalSladeshes: mostSladeshedUser.totalSladeshes,
+    });
+
+    // Update the mostCheckedInUser document in the statistics collection
+    await db.collection('statistics').doc('mostCheckedInUser').set({
+      username: mostCheckedInUser.username,
+      totalCheckIns: mostCheckedInUser.totalCheckIns,
+    });
+
+    console.log('Updated most sladeshed and most checked-in users.');
+    return null;
+  });
+
+// [END functions_firestore_instance]
