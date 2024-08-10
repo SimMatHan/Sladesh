@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; // Import the CSS file
 import LoadingRipples from '../assets/ripples.svg'; // Import the LoadingRipples component
+import ConfirmationIcon from '../assets/Confirmation.svg'; // Import the confirmation SVG
 
 const RequestForm = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -12,6 +13,8 @@ const RequestForm = ({ user }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [checkedIn, setCheckedIn] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false); // State for showing confirmation
 
   useEffect(() => {
     const fetchUserStatus = async () => {
@@ -39,8 +42,55 @@ const RequestForm = ({ user }) => {
     fetchUsers();
   }, [user]);
 
+  const handleGyroscope = (event) => {
+    const beta = event.beta !== null ? event.beta : 0;
+
+    // Check if the beta value is below -15
+    if (beta < -15) {
+      confirmSladesh();
+    }
+  };
+
+  const startGyroscopeMonitoring = () => {
+    if (window.DeviceOrientationEvent) {
+      console.log("DeviceOrientationEvent is supported.");
+      window.addEventListener('deviceorientation', handleGyroscope, true);
+    } else {
+      console.error("DeviceOrientationEvent is not supported on this device.");
+    }
+  };
+
+  const requestGyroscopePermission = async () => {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try {
+        const response = await DeviceOrientationEvent.requestPermission();
+        if (response === 'granted') {
+          startGyroscopeMonitoring();
+        } else {
+          console.error("Permission not granted for DeviceOrientationEvent");
+        }
+      } catch (error) {
+        console.error("Error requesting DeviceOrientationEvent permission", error);
+      }
+    } else {
+      startGyroscopeMonitoring(); // For non-iOS devices
+    }
+  };
+
+  const stopGyroscopeMonitoring = () => {
+    window.removeEventListener('deviceorientation', handleGyroscope);
+  };
+
   const sendRequest = async (e) => {
     e.preventDefault();
+    setShowPopup(true);
+    requestGyroscopePermission();
+  };
+
+  const confirmSladesh = async () => {
+    setShowPopup(false);
+    stopGyroscopeMonitoring();
+
     try {
       setError('');
       setSuccess('');
@@ -89,8 +139,8 @@ const RequestForm = ({ user }) => {
 
         await setDoc(userDocRef, { lastSladesh: now }, { merge: true });
 
-        setSuccess('Sladesh sent successfully!');
         setSelectedUser(null);
+        showConfirmationPopup(); // Show confirmation SVG
       } else {
         throw new Error("User document does not exist");
       }
@@ -98,6 +148,13 @@ const RequestForm = ({ user }) => {
       console.error("Failed to send request:", error);
       setError('Failed to send request. Please try again.');
     }
+  };
+
+  const showConfirmationPopup = () => {
+    setShowConfirmation(true);
+    setTimeout(() => {
+      setShowConfirmation(false);
+    }, 3000); // Hide the confirmation SVG after 4 seconds
   };
 
   const toggleUserSelection = (user) => {
@@ -180,6 +237,22 @@ const RequestForm = ({ user }) => {
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">{success}</p>}
       </form>
+
+      {showPopup && (
+        <div className="popup-backdrop">
+          <div className="popup">
+            <div className="popup-content">
+              <h2>Do the Sladesh with the phone!</h2>
+            </div>
+          </div>
+        </div>
+        )}
+
+      {showConfirmation && (
+        <div className="confirmation-popup">
+          <img src={ConfirmationIcon} alt="Confirmation" />
+        </div>
+      )}
     </div>
   );
 };

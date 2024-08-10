@@ -76,11 +76,11 @@ html, body {
 .drink-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between; /* Ensure items align with buttons */
+  justify-content: space-between;
   list-style-type: none;
   padding: 0;
   width: 100%;
-  max-width: 300px; /* Align with the buttons */
+  max-width: 300px;
   overflow-y: auto;
   margin-top: 20px;
 }
@@ -102,7 +102,7 @@ html, body {
   background-color: var(--background-color);
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 10px 0; /* Adjust margin for spacing */
+  margin: 10px 0;
   padding: 20px;
   text-align: center;
   width: 100px;
@@ -204,7 +204,7 @@ html, body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   border-radius: 10px;
-  width: 80%;
+  width: 90%;
   max-width: 300px;
 }
 
