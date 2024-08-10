@@ -151,6 +151,8 @@ const RequestForm = ({ user }) => {
   };
 
   const showConfirmationPopup = () => {
+
+    setSuccess('Sladesh sent successfully!'); // Show success message
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);

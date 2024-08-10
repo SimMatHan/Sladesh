@@ -203,7 +203,7 @@ html, body {
 .confirmation-popup img {
   width: 150px;
   height: 150px;
-  animation: fadeInOut 4s ease-in-out;
+  animation: fadeInOut 3s ease-in-out;
 }
 
 @keyframes fadeInOut {

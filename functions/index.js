@@ -14,7 +14,7 @@ exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
     const resetTimestamp = admin.firestore.Timestamp.fromDate(new Date());
 
     usersSnapshot.forEach(doc => {
-      batch.update(doc.ref, { lastSladesh: resetTimestamp });
+      batch.update(doc.ref, { lastSladesh: null, lastSladeshTimestamp: resetTimestamp });
     });
 
     await batch.commit();
