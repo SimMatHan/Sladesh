@@ -61,9 +61,17 @@ html, body {
 }
 
 .loading-indicator {
-  font-size: 16px;
-  color: var(--primary-color);
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 10px; /* Add some space between the ripples and text */
+}
+
+.loading-ripples {
+  width: 50px; /* Adjust the size as necessary */
+  height: 50px; /* Adjust the size as necessary */
 }
 
 .user-cards-container {

@@ -3,6 +3,7 @@ import { createRequest, getUsers } from '../services/requestService';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; // Import the CSS file
+import LoadingRipples from '../assets/ripples.svg'; // Import the LoadingRipples component
 
 const RequestForm = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -133,42 +134,51 @@ const RequestForm = ({ user }) => {
         <p className="intro-text">Select a user to send a Sladesh to. Only users who are currently checked in will appear in the list.</p>
       </div>
       <form onSubmit={sendRequest} className="request-form">
+        <div className="button-group">
+          <button
+            onClick={handleCheckIn}
+            className="check-in-button"
+            disabled={checkedIn}
+          >
+            {checkedIn ? "You're checked in" : "Check In"}
+          </button>
+          <button onClick={refreshUsers} type="button" className="refresh-button">Refresh Users</button>
+        </div>
+
         {loading ? (
-          <div className="loading-indicator">Loading users...</div>
+          <div className="loading-indicator">
+            <img src={LoadingRipples} alt="Loading..." className="loading-ripples" />
+            <p>Loading users...</p>
+          </div>
         ) : (
-          <>
-            <div className="button-group">
-              <button
-                onClick={handleCheckIn}
-                className="check-in-button"
-                disabled={checkedIn}
-              >
-                {checkedIn ? "You're checked in" : "Check In"}
-              </button>
-              <button onClick={refreshUsers} type="button" className="refresh-button">Refresh Users</button>
-            </div>
-            <div className="user-cards-container">
-              {users.length === 0 ? (
-                <p className="no-users-message">No users are currently checked in.</p>
-              ) : (
-                users.map((user) => (
-                  <div
-                    key={user.id}
-                    className={`user-card ${selectedUser && selectedUser.id === user.id ? 'selected' : ''}`}
-                    onClick={() => toggleUserSelection(user)}
-                  >
-                    <div className="user-info">
-                      <h3>{user.username}</h3>
-                    </div>
+          <div className="user-cards-container">
+            {users.length === 0 ? (
+              <p className="no-users-message">No users are currently checked in.</p>
+            ) : (
+              users.map((user) => (
+                <div
+                  key={user.id}
+                  className={`user-card ${selectedUser && selectedUser.id === user.id ? 'selected' : ''}`}
+                  onClick={() => toggleUserSelection(user)}
+                >
+                  <div className="user-info">
+                    <h3>{user.username}</h3>
                   </div>
-                ))
-              )}
-            </div>
-            <button type="submit" className="form-button" disabled={!selectedUser}>Send Sladesh</button>
-            {error && <p className="error-message">{error}</p>}
-            {success && <p className="success-message">{success}</p>}
-          </>
+                </div>
+              ))
+            )}
+          </div>
         )}
+
+        <button
+          type="submit"
+          className="form-button"
+          disabled={!selectedUser}
+        >
+          Send Sladesh
+        </button>
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
       </form>
     </div>
   );

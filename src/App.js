@@ -8,8 +8,9 @@ import Home from './components/Home';
 import RequestForm from './components/RequestForm';
 import UserIdentification from './components/UserIdentification';
 import Scoreboard from './components/Scoreboard';
-import SladeshHub from './components/SladeshHub'; // Import the new component
-import { auth, db, messaging, getToken } from './firebaseConfig';
+import SladeshHub from './components/SladeshHub'; 
+import Charts from './components/Charts'; 
+import { auth, db } from './firebaseConfig';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -28,19 +29,6 @@ const App = () => {
           const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
           if (drinksDoc.exists()) {
             setDrinks(drinksDoc.data().drinks);
-          }
-
-          // Request permission to send notifications and get FCM token
-          try {
-            const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY' });
-            if (token) {
-              console.log('FCM Token:', token);
-              await setDoc(doc(db, 'users', user.uid), { fcmToken: token }, { merge: true });
-            } else {
-              console.log('No registration token available. Request permission to generate one.');
-            }
-          } catch (err) {
-            console.error('An error occurred while retrieving token. ', err);
           }
         }
       } else {
@@ -133,6 +121,7 @@ const App = () => {
             <Route path="/requests" element={<RequestForm user={user} />} />
             <Route path="/scoreboard" element={<Scoreboard user={user} />} />
             <Route path="/sladesh-hub" element={<SladeshHub user={user} onViewed={handleViewedSladeshHub} onNewRequests={handleNewRequests} />} />
+            <Route path="/charts" element={<Charts />} />
           </Routes>
         </div>
       </Router>

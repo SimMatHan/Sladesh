@@ -50,9 +50,9 @@ const Header = ({ sladeshCount }) => {
               className="nav-icon"
             />
           </Link>
-          <Link to="/chart">
+          <Link to="/charts">
             <img
-              src={location.pathname === '/chart' ? ChartFilled : Chart}
+              src={location.pathname === '/charts' ? ChartFilled : Chart}
               alt="Chart"
               className="nav-icon"
             />
