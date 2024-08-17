@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey } from 'react-icons/fa';
+import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey, FaCannabis } from 'react-icons/fa';
 import './Home.css';
 import { db } from '../firebaseConfig';
 import youSureAboutThatGif from '../assets/yousureaboutthat.gif'; // Import the GIF
@@ -12,6 +12,7 @@ const iconMap = {
   wine: <FaWineGlassAlt />,
   drink: <FaCocktail />,
   shots: <FaGlassWhiskey />,
+  joints: <FaCannabis />,
 };
 
 const getIcon = (drinkType) => {
@@ -123,6 +124,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
         <option value="wine">Wine</option>
         <option value="drink">Drink</option>
         <option value="shots">Shots</option>
+        <option value="joints">Joints</option>
       </select>
       <div className="button-container">
         <button className="main-button" onClick={() => handleAddDrink(drinkType)} disabled={!drinkType}>Add Drink</button>
