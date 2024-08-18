@@ -130,18 +130,6 @@ const Charts = () => {
         <h2 className="pie-chart-heading">Beverage Breakdown</h2>
         <Pie data={data} />
       </div>
-      <div className="statistics-cards">
-        <div className="statistics-card">
-          <h3>Most times sladeshed</h3>
-          <p>{mostSladeshedUser?.username || 'N/A'}</p>
-          <p>{mostSladeshedUser?.totalSladeshes || 0}</p>
-        </div>
-        <div className="statistics-card">
-          <h3>Most times checked in</h3>
-          <p>{mostCheckedInUser?.username || 'N/A'}</p>
-          <p>{mostCheckedInUser?.totalCheckIns || 0}</p>
-        </div>
-      </div>
     </div>
   );
 };
