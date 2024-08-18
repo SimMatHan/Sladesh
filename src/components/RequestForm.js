@@ -13,8 +13,8 @@ const RequestForm = ({ user }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [checkedIn, setCheckedIn] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false); // State for showing confirmation
 
   useEffect(() => {
     const fetchUserStatus = async () => {
@@ -45,7 +45,6 @@ const RequestForm = ({ user }) => {
   const handleGyroscope = (event) => {
     const beta = event.beta !== null ? event.beta : 0;
 
-    // Check if the beta value is below -15
     if (beta < -15) {
       confirmSladesh();
     }
@@ -83,13 +82,13 @@ const RequestForm = ({ user }) => {
 
   const sendRequest = async (e) => {
     e.preventDefault();
-    setShowPopup(true);
-    requestGyroscopePermission();
+    setShowPopup(true); // Show the popup
+    requestGyroscopePermission(); // Request permission and start gyroscope monitoring
   };
 
   const confirmSladesh = async () => {
-    setShowPopup(false);
     stopGyroscopeMonitoring();
+    setShowPopup(false); // Hide the popup
 
     try {
       setError('');
@@ -151,12 +150,11 @@ const RequestForm = ({ user }) => {
   };
 
   const showConfirmationPopup = () => {
-
     setSuccess('Sladesh sent successfully!'); // Show success message
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
-    }, 3000); // Hide the confirmation SVG after 4 seconds
+    }, 3000); // Hide the confirmation SVG after 3 seconds
   };
 
   const toggleUserSelection = (user) => {
@@ -186,24 +184,37 @@ const RequestForm = ({ user }) => {
     }
   };
 
+  // Inline Popup Component
+  const SladeshPopup = () => (
+    <>
+      <div className="sladesh-popup-overlay"></div>
+      <div className="sladesh-popup">
+        <div className="sladesh-popup-content">
+          <p>Do the Sladesh with the phone!</p>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="request-form-container">
       <div className="intro-container">
         <h1 className="intro-heading">Send a Sladesh</h1>
         <p className="intro-text">Select a user to send a Sladesh to. Only users who are currently checked in will appear in the list.</p>
       </div>
-      <form onSubmit={sendRequest} className="request-form">
-        <div className="button-group">
-          <button
-            onClick={handleCheckIn}
-            className="check-in-button"
-            disabled={checkedIn}
-          >
-            {checkedIn ? "You're checked in" : "Check In"}
-          </button>
-          <button onClick={refreshUsers} type="button" className="refresh-button">Refresh Users</button>
-        </div>
 
+      <div className="button-group">
+        <button
+          onClick={handleCheckIn}
+          className="check-in-button"
+          disabled={checkedIn}
+        >
+          {checkedIn ? "You're checked in" : "Check In"}
+        </button>
+        <button onClick={refreshUsers} type="button" className="refresh-button">Refresh Users</button>
+      </div>
+
+      <form onSubmit={sendRequest} className="request-form">
         {loading ? (
           <div className="loading-indicator">
             <img src={LoadingRipples} alt="Loading..." className="loading-ripples" />
@@ -240,21 +251,13 @@ const RequestForm = ({ user }) => {
         {success && <p className="success-message">{success}</p>}
       </form>
 
-      {showPopup && (
-        <div className="popup-backdrop">
-          <div className="popup">
-            <div className="popup-content">
-              <h2>Do the Sladesh with the phone!</h2>
-            </div>
-          </div>
-        </div>
-        )}
-
       {showConfirmation && (
         <div className="confirmation-popup">
           <img src={ConfirmationIcon} alt="Confirmation" />
         </div>
       )}
+
+      {showPopup && <SladeshPopup />} {/* Render Popup only when showPopup is true */}
     </div>
   );
 };
