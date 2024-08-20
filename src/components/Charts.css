@@ -123,7 +123,7 @@ html, body {
   justify-content: center; /* Center the cards horizontally */
   align-items: center;
   width: 100%;
-  max-width: 100%; /* Prevent the cards from exceeding the screen width */
+  max-width: 90%; /* Prevent the cards from exceeding the screen width */
   padding: 0;
   margin-bottom: 50px;
   gap: 25px; /* Adds space between the cards */
@@ -133,7 +133,7 @@ html, body {
   font-size: 12px;
   background-color: #f8f9fa;
   border-radius: 10px;
-  padding: 15px;
+  padding: 10px;
   text-align: center;
   width: 35%; /* Ensure two cards fit side by side */
   max-width: 150px;

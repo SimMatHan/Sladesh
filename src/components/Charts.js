@@ -145,10 +145,12 @@ const Charts = () => {
         <div className="statistics-card">
           <h3>Most Sladeshed User</h3>
           <p>{mostSladeshedUser.username || 'Loading...'}</p>
+          <p>{`${mostSladeshedUser.totalSladeshes || ''}`}</p> {/* Display total sladeshes */}
         </div>
         <div className="statistics-card">
           <h3>Most Checked-In User</h3>
           <p>{mostCheckedInUser.username || 'Loading...'}</p>
+          <p>{`${mostCheckedInUser.totalCheckIns || ''}`}</p> {/* Display total check-ins */}
         </div>
       </div>
     </div>

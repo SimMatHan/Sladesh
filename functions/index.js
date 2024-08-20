@@ -5,16 +5,16 @@ const { getFirestore } = require('firebase-admin/firestore');
 admin.initializeApp();
 const db = getFirestore();
 
-exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
+// Function to reset Sladesh count daily
+exports.resetSladeshCount = functions.pubsub.schedule('0 0 * * *') // Every day at midnight
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
     const batch = db.batch();
-    const resetTimestamp = admin.firestore.Timestamp.fromDate(new Date());
 
     usersSnapshot.forEach(doc => {
-      batch.update(doc.ref, { lastSladesh: resetTimestamp, sladeshCount: 0 });
+      batch.update(doc.ref, { sladeshCount: 0 });
     });
 
     await batch.commit();
@@ -22,7 +22,8 @@ exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
+// Function to reset check-in status daily
+exports.resetCheckInStatus = functions.pubsub.schedule('0 0 * * *') // Every day at midnight
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -37,7 +38,8 @@ exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
+// Function to delete old requests older than 12 hours
+exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs twice a day at midnight and noon
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const twelveHoursAgo = admin.firestore.Timestamp.fromDate(
@@ -71,6 +73,7 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
     }
   });
 
+// Function to list all users (for your listUsers function)
 exports.listUsers = functions.https.onCall(async (data, context) => {
   const usersRef = db.collection('users');
   const querySnapshot = await usersRef.get();
@@ -83,6 +86,7 @@ exports.listUsers = functions.https.onCall(async (data, context) => {
   return users;
 });
 
+// Function to update the highest drinks in 12 hours
 exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
@@ -109,7 +113,8 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-  exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
+// Function to aggregate beverage data and reset the drink counts daily
+exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -151,28 +156,21 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-  exports.updateUserStatistics = functions.pubsub.schedule('0 0,12 * * *')
+// Function to update the most sladeshed user daily
+exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
     let mostSladeshedUser = { username: '', totalSladeshes: 0 };
-    let mostCheckedInUser = { username: '', totalCheckIns: 0 };
 
     usersSnapshot.forEach(doc => {
       const data = doc.data();
 
-      if (data.totalSladesh > mostSladeshedUser.totalSladeshes) {
+      if (data.totalSladeshes > mostSladeshedUser.totalSladeshes) {
         mostSladeshedUser = {
           username: data.username,
-          totalSladeshes: data.totalSladesh,
-        };
-      }
-
-      if (data.checkIns > mostCheckedInUser.totalCheckIns) {
-        mostCheckedInUser = {
-          username: data.username,
-          totalCheckIns: data.checkIns,
+          totalSladeshes: data.totalSladeshes,
         };
       }
     });
@@ -182,11 +180,84 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
       totalSladeshes: mostSladeshedUser.totalSladeshes,
     });
 
-    await db.collection('statistics').doc('mostCheckedInUser').set({
-      username: mostCheckedInUser.username,
-      totalCheckIns: mostCheckedInUser.totalCheckIns,
+    console.log('Updated most sladeshed user:', mostSladeshedUser.username);
+    return null;
+  });
+
+// Function to increment sladesh count on sladesh creation and update total sladeshes
+exports.incrementSladeshCount = functions.firestore
+  .document('requests/{requestId}')
+  .onCreate(async (snapshot, context) => {
+    const data = snapshot.data();
+    const recipientUsername = data.recipient;
+
+    // Get the user's document
+    const userRef = db.collection('users').where('username', '==', recipientUsername);
+    const userSnapshot = await userRef.get();
+
+    if (!userSnapshot.empty) {
+      const userDoc = userSnapshot.docs[0];
+      const userData = userDoc.data();
+
+      // Increment the daily sladeshCount field
+      const newSladeshCount = (userData.sladeshCount || 0) + 1;
+      // Increment the totalSladeshes field
+      const newTotalSladeshes = (userData.totalSladeshes || 0) + 1;
+
+      await userDoc.ref.update({
+        sladeshCount: newSladeshCount,
+        totalSladeshes: newTotalSladeshes
+      });
+
+      console.log(`Incremented sladesh count for user: ${recipientUsername} to ${newSladeshCount}`);
+      console.log(`Incremented total sladeshes for user: ${recipientUsername} to ${newTotalSladeshes}`);
+    } else {
+      console.log(`No user found with username: ${recipientUsername}`);
+    }
+    return null;
+  });
+
+// Function to increment check-in count on user check-in
+exports.incrementCheckInCount = functions.firestore
+  .document('users/{userId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    // Check if the checkedIn status changed from false to true
+    if (!before.checkedIn && after.checkedIn) {
+      const newCheckInCount = (after.checkInCount || 0) + 1;
+      await change.after.ref.update({ checkInCount: newCheckInCount });
+
+      console.log(`Incremented check-in count for user: ${after.username} to ${newCheckInCount}`);
+    }
+    return null;
+  });
+
+// Function to update the most checked-in user daily
+exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    let mostCheckedInUser = { username: '', checkInCount: 0 };
+
+    usersSnapshot.forEach(doc => {
+      const data = doc.data();
+
+      if (data.checkInCount > mostCheckedInUser.checkInCount) {
+        mostCheckedInUser = {
+          username: data.username,
+          checkInCount: data.checkInCount,
+        };
+      }
     });
 
-    console.log('Updated most sladeshed and most checked-in users.');
+    await db.collection('statistics').doc('mostCheckedInUser').set({
+      username: mostCheckedInUser.username,
+      totalCheckIns: mostCheckedInUser.checkInCount,
+    });
+
+    console.log('Updated most checked-in user:', mostCheckedInUser.username);
     return null;
   });
