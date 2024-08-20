@@ -14,7 +14,7 @@ exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
     const resetTimestamp = admin.firestore.Timestamp.fromDate(new Date());
 
     usersSnapshot.forEach(doc => {
-      batch.update(doc.ref, { lastSladesh: null, lastSladeshTimestamp: resetTimestamp, sladeshCount: 0 });
+      batch.update(doc.ref, { lastSladesh: resetTimestamp, sladeshCount: 0 });
     });
 
     await batch.commit();
@@ -37,7 +37,7 @@ exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-exports.deleteOldRequests = functions.pubsub.schedule('every 1 hours')
+exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const twelveHoursAgo = admin.firestore.Timestamp.fromDate(
@@ -54,8 +54,11 @@ exports.deleteOldRequests = functions.pubsub.schedule('every 1 hours')
         return null;
       }
 
+      console.log(`Found ${snapshot.size} requests older than 12 hours.`);
+
       const batch = db.batch();
       snapshot.docs.forEach(doc => {
+        console.log(`Deleting request with ID: ${doc.id}, created at: ${doc.data().createdAt.toDate()}`);
         batch.delete(doc.ref);
       });
 
@@ -90,7 +93,7 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
 
     usersSnapshot.forEach(doc => {
       const data = doc.data();
-      const lastReset = data.lastSladeshTimestamp ? data.lastSladeshTimestamp.toDate() : new Date(now.getTime() - 12 * 60 * 60 * 1000);
+      const lastReset = data.lastSladesh ? data.lastSladesh.toDate() : new Date(now.getTime() - 12 * 60 * 60 * 1000);
       const timeSinceLastReset = now.getTime() - lastReset.getTime();
       const isWithin12Hours = timeSinceLastReset <= 12 * 60 * 60 * 1000;
 

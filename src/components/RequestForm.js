@@ -129,11 +129,11 @@ const RequestForm = ({ user }) => {
         const now = new Date();
         const recipientData = recipientDoc.data();
   
-        const lastSladeshTimestamp = recipientData.lastSladeshTimestamp ? recipientData.lastSladeshTimestamp.toDate() : null;
+        const lastSladesh = recipientData.lastSladesh ? recipientData.lastSladesh.toDate() : null;
         const twelveHoursInMillis = 12 * 60 * 60 * 1000;
   
         // Check if more than 12 hours have passed or if it's the first Sladesh
-        const canIncrement = !lastSladeshTimestamp || (now - lastSladeshTimestamp) >= twelveHoursInMillis;
+        const canIncrement = !lastSladesh || (now - lastSladesh) >= twelveHoursInMillis;
   
         if (canIncrement) {
           const newRecipientSladeshCount = (recipientData.sladeshCount || 0) + 1;
@@ -141,7 +141,7 @@ const RequestForm = ({ user }) => {
           await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
           await setDoc(recipientDocRef, {
             sladeshCount: newRecipientSladeshCount,
-            lastSladeshTimestamp: now
+            lastSladesh: now
           }, { merge: true });
   
           setCanSendSladesh(false);
@@ -159,7 +159,6 @@ const RequestForm = ({ user }) => {
       setIsSending(false);
     }
   };
-  
 
   const showConfirmationPopup = () => {
     setSuccess('Sladesh sent successfully!');
