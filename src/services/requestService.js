@@ -13,17 +13,23 @@ export const createRequest = async (request) => {
   });
 };
 
-export const getRequests = async (recipientUsername) => {
-  const q = query(usersCollection, where("username", "==", recipientUsername));
+export const getRequests = async (username, type = 'received') => {
+  const q = query(usersCollection, where("username", "==", username));
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot.empty) {
-    throw new Error("Recipient not found");
+    throw new Error("User not found");
   }
 
-  const recipient = querySnapshot.docs[0].data();
+  const user = querySnapshot.docs[0].data();
 
-  const requestQuery = query(requestsCollection, where("recipient", "==", recipient.username));
+  let requestQuery;
+  if (type === 'received') {
+    requestQuery = query(requestsCollection, where("recipient", "==", user.username));
+  } else if (type === 'sent') {
+    requestQuery = query(requestsCollection, where("sender", "==", user.username));
+  }
+
   const requestSnapshot = await getDocs(requestQuery);
   const requests = requestSnapshot.docs.map(doc => doc.data());
   return requests;
