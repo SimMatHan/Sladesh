@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createRequest, getUsers } from '../services/requestService';
-import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
+import { getUsers } from '../services/requestService';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; 
 import LoadingRipples from '../assets/ripples.svg'; 
@@ -15,9 +15,8 @@ const RequestForm = ({ user }) => {
   const [checkedIn, setCheckedIn] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [isSending, setIsSending] = useState(false); // New state for tracking sending status
-
-  let sladeshSent = false; // Flag to prevent multiple triggers
+  const [isSending, setIsSending] = useState(false);
+  const [canSendSladesh, setCanSendSladesh] = useState(true); // New state to track Sladesh availability
 
   useEffect(() => {
     const fetchUserStatus = async () => {
@@ -26,6 +25,18 @@ const RequestForm = ({ user }) => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         setCheckedIn(userData.checkedIn);
+
+        // Check if the user has already used their Sladesh in the last 12 hours
+        const now = new Date();
+        const lastSladesh = userData.lastSladesh ? userData.lastSladesh.toDate() : null;
+        const twelveHoursInMillis = 12 * 60 * 60 * 1000;
+
+        if (lastSladesh && (now - lastSladesh) < twelveHoursInMillis) {
+          setCanSendSladesh(false);
+          setError('You have already used your Sladesh in the last 12 hours.');
+        } else {
+          setCanSendSladesh(true);
+        }
       }
     };
 
@@ -48,14 +59,12 @@ const RequestForm = ({ user }) => {
   const handleGyroscope = (event) => {
     const beta = event.beta !== null ? event.beta : 0;
 
-    if (beta < -15 && !sladeshSent) {
-      sladeshSent = true;
+    if (beta < -15 && canSendSladesh) {
       confirmSladesh();
     }
   };
 
   const startGyroscopeMonitoring = () => {
-    sladeshSent = false; // Reset flag when starting monitoring
     if (window.DeviceOrientationEvent) {
       console.log("DeviceOrientationEvent is supported.");
       window.addEventListener('deviceorientation', handleGyroscope, true);
@@ -77,106 +86,100 @@ const RequestForm = ({ user }) => {
         console.error("Error requesting DeviceOrientationEvent permission", error);
       }
     } else {
-      startGyroscopeMonitoring(); 
+      startGyroscopeMonitoring();
     }
   };
 
   const stopGyroscopeMonitoring = () => {
     window.removeEventListener('deviceorientation', handleGyroscope);
-    sladeshSent = false; // Reset flag when stopping monitoring
   };
 
   const sendRequest = async (e) => {
     e.preventDefault();
-    setShowPopup(true); 
-    requestGyroscopePermission(); 
+    if (!canSendSladesh) {
+      setError('You have already used your Sladesh in the last 12 hours.');
+      return;
+    }
+    setShowPopup(true);
+    requestGyroscopePermission();
   };
 
   const confirmSladesh = async () => {
     stopGyroscopeMonitoring();
-    setShowPopup(false); 
+    setShowPopup(false);
+  
+    if (isSending) return;
+    setIsSending(true);
   
     try {
       setError('');
       setSuccess('');
-      setIsSending(true); // Start sending process
   
       if (!user || !user.displayName || !selectedUser) {
         throw new Error("Invalid sender or recipient information");
       }
   
-      await runTransaction(db, async (transaction) => {
-        const userDocRef = doc(db, 'users', user.uid);
-        const recipientDocRef = doc(db, 'users', selectedUser.id);
+      const senderDocRef = doc(db, 'users', user.uid);
+      const senderDoc = await getDoc(senderDocRef);
   
-        const userDoc = await transaction.get(userDocRef);
-        const recipientDoc = await transaction.get(recipientDocRef);
+      const recipientDocRef = doc(db, 'users', selectedUser.id);
+      const recipientDoc = await getDoc(recipientDocRef);
   
-        if (!userDoc.exists()) {
-          throw new Error("User document does not exist");
-        }
-  
-        if (!recipientDoc.exists()) {
-          throw new Error("Recipient not found.");
-        }
-  
-        const userData = userDoc.data();
-        const recipientData = recipientDoc.data();
+      if (senderDoc.exists() && recipientDoc.exists()) {
         const now = new Date();
-        const lastSladesh = userData.lastSladesh ? userData.lastSladesh.toDate() : null;
+        const recipientData = recipientDoc.data();
+  
+        const lastSladeshTimestamp = recipientData.lastSladeshTimestamp ? recipientData.lastSladeshTimestamp.toDate() : null;
         const twelveHoursInMillis = 12 * 60 * 60 * 1000;
   
-        if (lastSladesh && (now - lastSladesh) < twelveHoursInMillis) {
-          throw new Error('You have already used your Sladesh in the last 12 hours.');
+        // Check if more than 12 hours have passed or if it's the first Sladesh
+        const canIncrement = !lastSladeshTimestamp || (now - lastSladeshTimestamp) >= twelveHoursInMillis;
+  
+        if (canIncrement) {
+          const newRecipientSladeshCount = (recipientData.sladeshCount || 0) + 1;
+  
+          await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
+          await setDoc(recipientDocRef, {
+            sladeshCount: newRecipientSladeshCount,
+            lastSladeshTimestamp: now
+          }, { merge: true });
+  
+          setCanSendSladesh(false);
+          setSelectedUser(null);
+          showConfirmationPopup();
+          setSuccess('Sladesh sent successfully!');
+        } else {
+          setError('Sladesh already counted for this session.');
         }
-  
-        if (!userData.checkedIn) {
-          throw new Error('You need to check in to send a Sladesh.');
-        }
-  
-        if (!recipientData.checkedIn) {
-          throw new Error('The recipient needs to check in to receive a Sladesh.');
-        }
-  
-        const message = `Sladesh by ${user.displayName}`;
-        const requestRef = db.collection('requests').doc();
-  
-        transaction.set(requestRef, {
-          sender: user.displayName,
-          recipient: selectedUser.username,
-          message,
-          createdAt: now,
-        });
-  
-        transaction.update(userDocRef, { lastSladesh: now });
-  
-        // Here is where createRequest is called
-        await createRequest({ sender: user, recipient: selectedUser.username, message });
-      });
-  
-      setSelectedUser(null);
-      showConfirmationPopup(); 
+      }
     } catch (error) {
       console.error("Failed to send request:", error);
       setError(error.message || 'Failed to send request. Please try again.');
     } finally {
-      setIsSending(false); // End sending process
+      setIsSending(false);
     }
   };
+  
 
   const showConfirmationPopup = () => {
-    setSuccess('Sladesh sent successfully!'); 
+    setSuccess('Sladesh sent successfully!');
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
-    }, 3000); 
+    }, 3000);
   };
 
   const toggleUserSelection = (user) => {
+    if (!canSendSladesh) {
+      setError('You have already used your Sladesh in the last 12 hours.');
+      return;
+    }
+
     if (selectedUser && selectedUser.id === user.id) {
       setSelectedUser(null);
     } else {
       setSelectedUser(user);
+      setError(''); // Clear any previous error when selecting a new user
     }
   };
 
@@ -258,7 +261,7 @@ const RequestForm = ({ user }) => {
         <button
           type="submit"
           className="form-button"
-          disabled={!selectedUser || isSending}
+          disabled={!selectedUser || isSending || !canSendSladesh} // Disable if Sladesh already used
         >
           {isSending ? 'Sending...' : 'Send Sladesh'}
         </button>
@@ -272,7 +275,7 @@ const RequestForm = ({ user }) => {
         </div>
       )}
 
-      {showPopup && <SladeshPopup />} 
+      {showPopup && <SladeshPopup />}
     </div>
   );
 };
