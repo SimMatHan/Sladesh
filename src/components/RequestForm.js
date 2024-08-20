@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { createRequest, getUsers } from '../services/requestService';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import './RequestForm.css'; // Import the CSS file
-import LoadingRipples from '../assets/ripples.svg'; // Import the LoadingRipples component
-import ConfirmationIcon from '../assets/Confirmation.svg'; // Import the confirmation SVG
+import './RequestForm.css'; 
+import LoadingRipples from '../assets/ripples.svg'; 
+import ConfirmationIcon from '../assets/Confirmation.svg'; 
 
 const RequestForm = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -15,6 +15,9 @@ const RequestForm = ({ user }) => {
   const [checkedIn, setCheckedIn] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [isSending, setIsSending] = useState(false); // New state for tracking sending status
+
+  let sladeshSent = false; // Flag to prevent multiple triggers
 
   useEffect(() => {
     const fetchUserStatus = async () => {
@@ -45,12 +48,14 @@ const RequestForm = ({ user }) => {
   const handleGyroscope = (event) => {
     const beta = event.beta !== null ? event.beta : 0;
 
-    if (beta < -15) {
+    if (beta < -15 && !sladeshSent) {
+      sladeshSent = true;
       confirmSladesh();
     }
   };
 
   const startGyroscopeMonitoring = () => {
+    sladeshSent = false; // Reset flag when starting monitoring
     if (window.DeviceOrientationEvent) {
       console.log("DeviceOrientationEvent is supported.");
       window.addEventListener('deviceorientation', handleGyroscope, true);
@@ -72,89 +77,99 @@ const RequestForm = ({ user }) => {
         console.error("Error requesting DeviceOrientationEvent permission", error);
       }
     } else {
-      startGyroscopeMonitoring(); // For non-iOS devices
+      startGyroscopeMonitoring(); 
     }
   };
 
   const stopGyroscopeMonitoring = () => {
     window.removeEventListener('deviceorientation', handleGyroscope);
+    sladeshSent = false; // Reset flag when stopping monitoring
   };
 
   const sendRequest = async (e) => {
     e.preventDefault();
-    setShowPopup(true); // Show the popup
-    requestGyroscopePermission(); // Request permission and start gyroscope monitoring
+    setShowPopup(true); 
+    requestGyroscopePermission(); 
   };
 
   const confirmSladesh = async () => {
     stopGyroscopeMonitoring();
-    setShowPopup(false); // Hide the popup
-
+    setShowPopup(false); 
+  
     try {
       setError('');
       setSuccess('');
+      setIsSending(true); // Start sending process
+  
       if (!user || !user.displayName || !selectedUser) {
         throw new Error("Invalid sender or recipient information");
       }
-
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
+  
+      await runTransaction(db, async (transaction) => {
+        const userDocRef = doc(db, 'users', user.uid);
+        const recipientDocRef = doc(db, 'users', selectedUser.id);
+  
+        const userDoc = await transaction.get(userDocRef);
+        const recipientDoc = await transaction.get(recipientDocRef);
+  
+        if (!userDoc.exists()) {
+          throw new Error("User document does not exist");
+        }
+  
+        if (!recipientDoc.exists()) {
+          throw new Error("Recipient not found.");
+        }
+  
         const userData = userDoc.data();
+        const recipientData = recipientDoc.data();
         const now = new Date();
         const lastSladesh = userData.lastSladesh ? userData.lastSladesh.toDate() : null;
-        const isSameInterval = lastSladesh && (
-          (lastSladesh.getHours() < 12 && now.getHours() < 12) ||
-          (lastSladesh.getHours() >= 12 && now.getHours() >= 12)
-        );
-
-        if (isSameInterval) {
-          setError('You have used your Sladesh for this interval.');
-          return;
+        const twelveHoursInMillis = 12 * 60 * 60 * 1000;
+  
+        if (lastSladesh && (now - lastSladesh) < twelveHoursInMillis) {
+          throw new Error('You have already used your Sladesh in the last 12 hours.');
         }
-
+  
         if (!userData.checkedIn) {
-          setError('You need to check in to send a Sladesh.');
-          return;
+          throw new Error('You need to check in to send a Sladesh.');
         }
-
-        const recipientDocRef = doc(db, 'users', selectedUser.id);
-        const recipientDoc = await getDoc(recipientDocRef);
-
-        if (recipientDoc.exists()) {
-          const recipientData = recipientDoc.data();
-          if (!recipientData.checkedIn) {
-            setError('The recipient needs to check in to receive a Sladesh.');
-            return;
-          }
-        } else {
-          setError('Recipient not found.');
-          return;
+  
+        if (!recipientData.checkedIn) {
+          throw new Error('The recipient needs to check in to receive a Sladesh.');
         }
-
+  
         const message = `Sladesh by ${user.displayName}`;
+        const requestRef = db.collection('requests').doc();
+  
+        transaction.set(requestRef, {
+          sender: user.displayName,
+          recipient: selectedUser.username,
+          message,
+          createdAt: now,
+        });
+  
+        transaction.update(userDocRef, { lastSladesh: now });
+  
+        // Here is where createRequest is called
         await createRequest({ sender: user, recipient: selectedUser.username, message });
-
-        await setDoc(userDocRef, { lastSladesh: now }, { merge: true });
-
-        setSelectedUser(null);
-        showConfirmationPopup(); // Show confirmation SVG
-      } else {
-        throw new Error("User document does not exist");
-      }
+      });
+  
+      setSelectedUser(null);
+      showConfirmationPopup(); 
     } catch (error) {
       console.error("Failed to send request:", error);
-      setError('Failed to send request. Please try again.');
+      setError(error.message || 'Failed to send request. Please try again.');
+    } finally {
+      setIsSending(false); // End sending process
     }
   };
 
   const showConfirmationPopup = () => {
-    setSuccess('Sladesh sent successfully!'); // Show success message
+    setSuccess('Sladesh sent successfully!'); 
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
-    }, 3000); // Hide the confirmation SVG after 3 seconds
+    }, 3000); 
   };
 
   const toggleUserSelection = (user) => {
@@ -243,9 +258,9 @@ const RequestForm = ({ user }) => {
         <button
           type="submit"
           className="form-button"
-          disabled={!selectedUser}
+          disabled={!selectedUser || isSending}
         >
-          Send Sladesh
+          {isSending ? 'Sending...' : 'Send Sladesh'}
         </button>
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">{success}</p>}
@@ -257,7 +272,7 @@ const RequestForm = ({ user }) => {
         </div>
       )}
 
-      {showPopup && <SladeshPopup />} {/* Render Popup only when showPopup is true */}
+      {showPopup && <SladeshPopup />} 
     </div>
   );
 };

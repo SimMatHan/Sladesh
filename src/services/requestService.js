@@ -1,5 +1,5 @@
 import { db } from "../firebaseConfig";
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 const functions = getFunctions();
@@ -9,7 +9,7 @@ const usersCollection = collection(db, "users");
 export const createRequest = async (request) => {
   await addDoc(requestsCollection, {
     ...request,
-    timestamp: new Date().toISOString()
+    createdAt: serverTimestamp() // Use server timestamp for consistency
   });
 };
 

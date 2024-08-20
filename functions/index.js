@@ -14,14 +14,13 @@ exports.resetSladeshCount = functions.pubsub.schedule('0 0,12 * * *')
     const resetTimestamp = admin.firestore.Timestamp.fromDate(new Date());
 
     usersSnapshot.forEach(doc => {
-      batch.update(doc.ref, { lastSladesh: null, lastSladeshTimestamp: resetTimestamp });
+      batch.update(doc.ref, { lastSladesh: null, lastSladeshTimestamp: resetTimestamp, sladeshCount: 0 });
     });
 
     await batch.commit();
     console.log('Reset Sladesh count for all users.');
     return null;
   });
-
 
 exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
@@ -38,24 +37,35 @@ exports.resetCheckInStatus = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *')
+exports.deleteOldRequests = functions.pubsub.schedule('every 1 hours')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
-    const snapshot = await db.collection('requests').get();
+    const twelveHoursAgo = admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() - 12 * 60 * 60 * 1000)
+    );
 
-    if (snapshot.empty) {
-      console.log('No matching documents.');
+    try {
+      const snapshot = await db.collection('requests')
+        .where('createdAt', '<', twelveHoursAgo)
+        .get();
+
+      if (snapshot.empty) {
+        console.log('No old requests to delete.');
+        return null;
+      }
+
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+      console.log(`Deleted ${snapshot.size} old requests.`);
+      return null;
+    } catch (error) {
+      console.error('Error deleting old requests:', error);
       return null;
     }
-
-    const batch = db.batch();
-    snapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-
-    await batch.commit();
-    console.log('Deleted all requests.');
-    return null;
   });
 
 exports.listUsers = functions.https.onCall(async (data, context) => {
@@ -114,7 +124,6 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
       totalDrinks += data.drinks || 0;
     });
 
-    // Update the totalDrinks document in the statistics collection
     const statsRef = db.collection('statistics').doc('totalDrinks');
     await statsRef.set({
       beer: totalBeer,
@@ -127,7 +136,7 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-  exports.updateUserStatistics = functions.pubsub.schedule('0 0,12 * * *')
+exports.updateUserStatistics = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -153,13 +162,11 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
       }
     });
 
-    // Update the mostSladeshedUser document in the statistics collection
     await db.collection('statistics').doc('mostSladeshedUser').set({
       username: mostSladeshedUser.username,
       totalSladeshes: mostSladeshedUser.totalSladeshes,
     });
 
-    // Update the mostCheckedInUser document in the statistics collection
     await db.collection('statistics').doc('mostCheckedInUser').set({
       username: mostCheckedInUser.username,
       totalCheckIns: mostCheckedInUser.totalCheckIns,
@@ -168,5 +175,3 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
     console.log('Updated most sladeshed and most checked-in users.');
     return null;
   });
-
-// [END functions_firestore_instance]

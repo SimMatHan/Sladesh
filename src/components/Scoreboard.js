@@ -21,7 +21,7 @@ const Scoreboard = () => {
         usersList.push({
           username: userData.username,
           totalDrinks: userData.totalDrinks || 0,
-          sladeshCount: userData.sladeshCount || 0,
+          sladeshCount: userData.sladeshCount || 0, // Ensure this field is correctly retrieved
           sladeshUsed: sladeshUsed,
         });
       }
