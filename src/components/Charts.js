@@ -140,6 +140,17 @@ const Charts = () => {
         <h2 className="pie-chart-heading">Beverage Breakdown</h2>
         <Pie data={data} />
       </div>
+
+      <div className="statistics-cards">
+        <div className="statistics-card">
+          <h3>Most Sladeshed User</h3>
+          <p>{mostSladeshedUser.username || 'Loading...'}</p>
+        </div>
+        <div className="statistics-card">
+          <h3>Most Checked-In User</h3>
+          <p>{mostCheckedInUser.username || 'Loading...'}</p>
+        </div>
+      </div>
     </div>
   );
 };

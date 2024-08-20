@@ -34,10 +34,9 @@ html, body {
 }
 
 .charts-heading {
-  font-size: 20px;
+  font-size: 16px;
   color: var(--secondary-color);
   text-align: center;
-  margin-bottom: 20px;
 }
 
 .podium {
@@ -45,9 +44,9 @@ html, body {
   justify-content: center; /* Center the podium blocks */
   align-items: flex-end;
   width: 100%;
-  max-width: 90%; /* Ensure the podium doesn't exceed the screen width */
+  max-width: 350px; /* Slightly reduce the max width to shrink the podium */
   margin: 0 auto;
-  padding-top: 50px;
+  padding-top: 55px; /* Reduce the padding to shrink the podium area */
   flex-grow: 1;
 }
 
@@ -58,19 +57,20 @@ html, body {
   justify-content: flex-end;
   align-items: center;
   text-align: center;
-  padding: 5px;
-  margin: 0 10px; 
+  padding: 3px; /* Reduce the padding inside each block */
+  margin: 0 10px; /* Reduce the margin between podium blocks */
   border-radius: 5px;
   color: var(--font-color);
   position: relative;
 }
+
 
 .podium-text {
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 5px;
   position: absolute;
-  top: -35px;
+  top: -30px;
 }
 
 .podium-score {
@@ -81,17 +81,17 @@ html, body {
 
 .first {
   background-color: var(--first-place-color);
-  height: 100%;
+  height: 70%;
 }
 
 .second {
   background-color: var(--second-place-color);
-  height: 80%;
+  height: 60%;
 }
 
 .third {
   background-color: var(--third-place-color);
-  height: 70%;
+  height: 50%;
 }
 
 .pie-chart-container {
@@ -101,7 +101,14 @@ html, body {
   align-items: center;
   width: 100%;
   max-width: 275px;
-  flex-grow: 1;
+  margin: 25px 0px 50px 0px; /* Add some margin around the container */
+  padding: 10px; /* Add padding for some breathing room */
+  box-sizing: border-box; /* Ensure padding and border are included in the element's width and height */
+}
+
+.pie-chart-container canvas {
+  max-width: 100%;
+  height: auto;
 }
 
 .pie-chart-heading {
@@ -118,8 +125,8 @@ html, body {
   width: 100%;
   max-width: 100%; /* Prevent the cards from exceeding the screen width */
   padding: 0;
-  margin-top: 20px;
-  gap: 5px; /* Adds space between the cards */
+  margin-bottom: 50px;
+  gap: 25px; /* Adds space between the cards */
 }
 
 .statistics-card {
@@ -137,7 +144,7 @@ html, body {
 /* Adjustments for smaller screens */
 @media (max-width: 600px) {
   .charts-heading {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .podium-text {
@@ -162,17 +169,5 @@ html, body {
 
   .pie-chart-heading {
     font-size: 16px;
-  }
-
-  .statistics-cards {
-    flex-direction: column; /* Stack the cards vertically on smaller screens */
-    align-items: center; /* Center the cards vertically */
-    width: 100%; /* Ensure the container doesn't exceed the screen width */
-    padding: 0 10px;
-  }
-
-  .statistics-card {
-    width: 100%; /* Make the cards full width on smaller screens */
-    margin-bottom: 10px;
   }
 }

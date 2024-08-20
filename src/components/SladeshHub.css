@@ -52,6 +52,11 @@ html, body {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  width: 100%; 
+  max-width: 300px; 
 }
 
 .toggle-button {
@@ -62,14 +67,19 @@ html, body {
   font-size: 16px;
   font-weight: bold;
   color: var(--secondary-color);
-  border-radius: 5px;
-  margin: 0 10px;
-  transition: background-color 0.3s ease;
+  border-right: 1px solid #ccc;
+  flex: 1;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.toggle-button:last-child {
+  border-right: none; /* Remove right border for the last button */
 }
 
 .toggle-button.active {
-  background-color: var(--secondary-color);
-  color: var(--background-color);
+  background-color: var(--accent-color-2);
+  color: var(--secondary-color);
 }
 
 .loading-indicator {
@@ -172,5 +182,6 @@ html, body {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
+
 
 

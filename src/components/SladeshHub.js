@@ -7,7 +7,7 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('received');
-  const [transitioning, setTransitioning] = useState(false); // For managing transition state
+  const [transitioning, setTransitioning] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
