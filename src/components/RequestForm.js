@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers } from '../services/requestService';
+import { getUsers, createRequest } from '../services/requestService';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; 
@@ -16,7 +16,9 @@ const RequestForm = ({ user }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [canSendSladesh, setCanSendSladesh] = useState(true); // New state to track Sladesh availability
+  const [canSendSladesh, setCanSendSladesh] = useState(true);
+
+  let lock = false;
 
   useEffect(() => {
     const fetchUserStatus = async () => {
@@ -26,7 +28,6 @@ const RequestForm = ({ user }) => {
         const userData = userDoc.data();
         setCheckedIn(userData.checkedIn);
 
-        // Check if the user has already used their Sladesh in the last 12 hours
         const now = new Date();
         const lastSladesh = userData.lastSladesh ? userData.lastSladesh.toDate() : null;
         const twelveHoursInMillis = 12 * 60 * 60 * 1000;
@@ -59,8 +60,12 @@ const RequestForm = ({ user }) => {
   const handleGyroscope = (event) => {
     const beta = event.beta !== null ? event.beta : 0;
 
-    if (beta < -15 && canSendSladesh) {
-      confirmSladesh();
+    if (beta < -15 && canSendSladesh && !isSending && !lock) {
+      lock = true;
+      stopGyroscopeMonitoring();
+      setTimeout(() => {
+        confirmSladesh();
+      }, 500); // Delay before calling confirmSladesh
     }
   };
 
@@ -105,49 +110,43 @@ const RequestForm = ({ user }) => {
   };
 
   const confirmSladesh = async () => {
-    stopGyroscopeMonitoring();
-    setShowPopup(false);
-  
     if (isSending) return;
     setIsSending(true);
-  
+    setShowPopup(false);
+
     try {
       setError('');
       setSuccess('');
-  
+
       if (!user || !user.displayName || !selectedUser) {
         throw new Error("Invalid sender or recipient information");
       }
-  
+
       const senderDocRef = doc(db, 'users', user.uid);
       const senderDoc = await getDoc(senderDocRef);
-  
+
       const recipientDocRef = doc(db, 'users', selectedUser.id);
       const recipientDoc = await getDoc(recipientDocRef);
-  
+
       if (senderDoc.exists() && recipientDoc.exists()) {
         const now = new Date();
         const recipientData = recipientDoc.data();
-  
-        const lastSladesh = recipientData.lastSladesh ? recipientData.lastSladesh.toDate() : null;
+
+        const lastSladesh = senderDoc.data().lastSladesh ? senderDoc.data().lastSladesh.toDate() : null;
         const twelveHoursInMillis = 12 * 60 * 60 * 1000;
-  
-        // Check if more than 12 hours have passed or if it's the first Sladesh
+
         const canIncrement = !lastSladesh || (now - lastSladesh) >= twelveHoursInMillis;
-  
+
         if (canIncrement) {
           const newRecipientSladeshCount = (recipientData.sladeshCount || 0) + 1;
-  
+
           await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
           await setDoc(recipientDocRef, {
             sladeshCount: newRecipientSladeshCount,
-            lastSladesh: now
           }, { merge: true });
-  
-          setCanSendSladesh(false);
-          setSelectedUser(null);
-          showConfirmationPopup();
-          setSuccess('Sladesh sent successfully!');
+
+          // Now create a request after confirming the Sladesh
+          createSingleRequest(); 
         } else {
           setError('Sladesh already counted for this session.');
         }
@@ -157,6 +156,20 @@ const RequestForm = ({ user }) => {
       setError(error.message || 'Failed to send request. Please try again.');
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const createSingleRequest = async () => {
+    try {
+      await createRequest({
+        sender: user.displayName,
+        recipient: selectedUser.username,
+        message: `Sladesh by ${user.displayName}`,
+      });
+      showConfirmationPopup();
+      setSuccess('Sladesh sent successfully!');
+    } catch (error) {
+      console.error("Failed to create request:", error);
     }
   };
 
@@ -260,7 +273,7 @@ const RequestForm = ({ user }) => {
         <button
           type="submit"
           className="form-button"
-          disabled={!selectedUser || isSending || !canSendSladesh} // Disable if Sladesh already used
+          disabled={!selectedUser || isSending || !canSendSladesh}
         >
           {isSending ? 'Sending...' : 'Send Sladesh'}
         </button>

@@ -114,11 +114,6 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
-    let totalBeer = 0;
-    let totalWine = 0;
-    let totalShots = 0;
-    let totalDrinks = 0;
-
     usersSnapshot.forEach(doc => {
       const data = doc.data();
       totalBeer += data.beer || 0;
