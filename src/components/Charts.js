@@ -20,53 +20,64 @@ const Charts = () => {
   const [mostCheckedInUser, setMostCheckedInUser] = useState({});
 
   const fetchTopUsers = async () => {
-    const querySnapshot = await getDocs(collection(db, 'users'));
-    const usersList = [];
+    try {
+      const querySnapshot = await getDocs(collection(db, 'users'));
+      const usersList = [];
 
-    querySnapshot.forEach((doc) => {
-      const userData = doc.data();
-      if (userData.highestDrinksIn12Hours) {
-        usersList.push({
-          username: userData.username,
-          highestDrinksIn12Hours: userData.highestDrinksIn12Hours,
-        });
-      }
-    });
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        if (userData.highestDrinksIn12Hours) {
+          usersList.push({
+            username: userData.username,
+            highestDrinksIn12Hours: userData.highestDrinksIn12Hours,
+          });
+        }
+      });
 
-    // Sort users by highestDrinksIn12Hours in descending order
-    usersList.sort((a, b) => b.highestDrinksIn12Hours - a.highestDrinksIn12Hours);
+      // Sort users by highestDrinksIn12Hours in descending order
+      usersList.sort((a, b) => b.highestDrinksIn12Hours - a.highestDrinksIn12Hours);
 
-    // Get the top 3 users
-    const topThree = usersList.slice(0, 3);
-    setTopUsers(topThree);
+      // Get the top 3 users
+      const topThree = usersList.slice(0, 3);
+      setTopUsers(topThree);
+    } catch (error) {
+      console.error("Error fetching top users: ", error);
+    }
   };
 
   const fetchDrinkData = async () => {
-    const docRef = doc(db, 'statistics', 'totalDrinks');
-    const docSnap = await getDoc(docRef);
+    try {
+      const docRef = doc(db, 'statistics', 'totalDrinks');
+      const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      setDrinkData(docSnap.data());
-    } else {
-      console.log("No such document!");
-    }
+      if (docSnap.exists()) {
+        console.log("Fetched drink data:", docSnap.data()); // Log the fetched data
+        setDrinkData(docSnap.data());
+      } else {
+        console.log("No such document for totalDrinks!");
+      }
 
-    const sladeshedRef = doc(db, 'statistics', 'mostSladeshedUser');
-    const sladeshedSnap = await getDoc(sladeshedRef);
+      const sladeshedRef = doc(db, 'statistics', 'mostSladeshedUser');
+      const sladeshedSnap = await getDoc(sladeshedRef);
 
-    if (sladeshedSnap.exists()) {
-      setMostSladeshedUser(sladeshedSnap.data());
-    } else {
-      console.log("No such document!");
-    }
+      if (sladeshedSnap.exists()) {
+        console.log("Fetched most Sladeshed User:", sladeshedSnap.data()); // Log the fetched data
+        setMostSladeshedUser(sladeshedSnap.data());
+      } else {
+        console.log("No such document for mostSladeshedUser!");
+      }
 
-    const checkedInRef = doc(db, 'statistics', 'mostCheckedInUser');
-    const checkedInSnap = await getDoc(checkedInRef);
+      const checkedInRef = doc(db, 'statistics', 'mostCheckedInUser');
+      const checkedInSnap = await getDoc(checkedInRef);
 
-    if (checkedInSnap.exists()) {
-      setMostCheckedInUser(checkedInSnap.data());
-    } else {
-      console.log("No such document!");
+      if (checkedInSnap.exists()) {
+        console.log("Fetched most Checked-In User:", checkedInSnap.data()); // Log the fetched data
+        setMostCheckedInUser(checkedInSnap.data());
+      } else {
+        console.log("No such document for mostCheckedInUser!");
+      }
+    } catch (error) {
+      console.error("Error fetching drink data: ", error);
     }
   };
 
@@ -79,7 +90,6 @@ const Charts = () => {
     labels: ['Beer', 'Wine', 'Shots', 'Drinks'],
     datasets: [
       {
-        label: 'Beverages',
         data: [drinkData.beer, drinkData.wine, drinkData.shots, drinkData.drinks],
         backgroundColor: [
           '#d3d2c1', 

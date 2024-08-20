@@ -109,7 +109,7 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
+  exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -139,7 +139,7 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-exports.updateUserStatistics = functions.pubsub.schedule('0 0,12 * * *')
+  exports.updateUserStatistics = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
