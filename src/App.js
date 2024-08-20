@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import GlobalStyle from './globalStyles';
 import Header from './components/Header';
 import Home from './components/Home';
@@ -30,6 +30,15 @@ const App = () => {
           if (drinksDoc.exists()) {
             setDrinks(drinksDoc.data().drinks);
           }
+
+          // Set up a real-time listener for the Sladesh count
+          const userRef = doc(db, 'users', user.uid);
+          onSnapshot(userRef, (doc) => {
+            const data = doc.data();
+            if (data) {
+              setSladeshCount(data.sladeshCount || 0);
+            }
+          });
         }
       } else {
         setUser(null);
@@ -62,6 +71,7 @@ const App = () => {
         uid: user.uid,
         checkedIn: false,
         lastSladesh: null,
+        sladeshCount: 0,
       });
 
       localStorage.setItem('username', username);
