@@ -26,19 +26,9 @@ const App = () => {
           const userData = userDoc.data();
           setUser({ uid: user.uid, displayName: userData.username });
 
-          const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
-          if (drinksDoc.exists()) {
-            setDrinks(drinksDoc.data().drinks);
-          }
-
-          // Set up a real-time listener for the Sladesh count
-          const userRef = doc(db, 'users', user.uid);
-          onSnapshot(userRef, (doc) => {
-            const data = doc.data();
-            if (data) {
-              setSladeshCount(data.sladeshCount || 0);
-            }
-          });
+          // Set the drinks and sladeshCount from the user's document
+          setDrinks(userData.drinks || {});
+          setSladeshCount(userData.sladeshCount || 0);
         }
       } else {
         setUser(null);
@@ -48,12 +38,27 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      const unsubscribe = onSnapshot(userRef, (doc) => {
+        const data = doc.data();
+        if (data) {
+          setSladeshCount(data.sladeshCount || 0);
+          setDrinks(data.drinks || {}); // Update drinks in real-time
+        }
+      });
+
+      return () => unsubscribe();
+    }
+  }, [user]);
+
   const handleReset = async () => {
     localStorage.removeItem('drinkData');
     setDrinks({});
     if (user) {
       try {
-        await setDoc(doc(db, 'drinks', user.uid), { drinks: {} });
+        await setDoc(doc(db, 'users', user.uid), { drinks: {}, totalDrinks: 0 }, { merge: true });
       } catch (error) {
         console.error('Error resetting drinks in Firestore:', error);
       }
@@ -72,6 +77,8 @@ const App = () => {
         checkedIn: false,
         lastSladesh: null,
         sladeshCount: 0,
+        drinks: {}, // Initialize drinks as an empty object
+        totalDrinks: 0 // Initialize total drinks as 0
       });
 
       localStorage.setItem('username', username);
@@ -93,10 +100,9 @@ const App = () => {
         localStorage.setItem('username', userData.username);
         setUser({ uid: user.uid, displayName: userData.username });
 
-        const drinksDoc = await getDoc(doc(db, 'drinks', user.uid));
-        if (drinksDoc.exists()) {
-          setDrinks(drinksDoc.data().drinks);
-        }
+        // Set the drinks and sladeshCount from the user's document
+        setDrinks(userData.drinks || {});
+        setSladeshCount(userData.sladeshCount || 0);
       }
     } catch (error) {
       alert('Failed to sign in. Please try again.');

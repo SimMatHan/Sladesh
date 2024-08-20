@@ -71,8 +71,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
     const totalDrinks = Object.values(drinks).reduce((a, b) => a + b, 0);
     setTotalDrinks(totalDrinks); // Update the total drinks state
     try {
-      await setDoc(doc(db, 'drinks', user.uid), { drinks });
-      await setDoc(doc(db, 'users', user.uid), { totalDrinks }, { merge: true });
+      await setDoc(doc(db, 'users', user.uid), { drinks, totalDrinks }, { merge: true });
     } catch (error) {
       console.error('Error saving drinks to Firestore:', error);
     }
@@ -84,8 +83,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
     setTotalDrinks(0);
     localStorage.removeItem('drinkData');
     try {
-      await setDoc(doc(db, 'drinks', user.uid), { drinks: emptyDrinks });
-      await setDoc(doc(db, 'users', user.uid), { totalDrinks: 0 }, { merge: true });
+      await setDoc(doc(db, 'users', user.uid), { drinks: emptyDrinks, totalDrinks: 0 }, { merge: true });
     } catch (error) {
       console.error('Error resetting drinks in Firestore:', error);
     }
