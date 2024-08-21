@@ -35,6 +35,7 @@ html, body {
 
 .charts-heading {
   font-size: 16px;
+  margin-top: 20px;
   color: var(--secondary-color);
   text-align: center;
 }
@@ -63,7 +64,6 @@ html, body {
   color: var(--font-color);
   position: relative;
 }
-
 
 .podium-text {
   font-size: 14px;
@@ -100,8 +100,8 @@ html, body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: 275px;
-  margin: 25px 0px 50px 0px; /* Add some margin around the container */
+  max-width: 225px; /* Reduce the size of the pie chart container */
+  margin: 20px 0; /* Adjust margin as needed */
   padding: 10px; /* Add padding for some breathing room */
   box-sizing: border-box; /* Ensure padding and border are included in the element's width and height */
 }
@@ -112,7 +112,7 @@ html, body {
 }
 
 .pie-chart-heading {
-  font-size: 18px;
+  font-size: 16px; /* Reduce the font size */
   color: var(--secondary-color);
   margin-bottom: 10px;
   text-align: center;
@@ -123,20 +123,20 @@ html, body {
   justify-content: center; /* Center the cards horizontally */
   align-items: center;
   width: 100%;
-  max-width: 90%; /* Prevent the cards from exceeding the screen width */
+  max-width: 80%; /* Further reduce the max width to make cards smaller */
   padding: 0;
-  margin-bottom: 50px;
-  gap: 25px; /* Adds space between the cards */
+  margin-bottom: 30px; /* Adjust margin as needed */
+  gap: 15px; /* Adjust space between the cards */
 }
 
 .statistics-card {
-  font-size: 12px;
+  font-size: 10px;
   background-color: #f8f9fa;
   border-radius: 10px;
-  padding: 10px;
+  padding: 8px; /* Reduce padding inside the cards */
   text-align: center;
-  width: 35%; /* Ensure two cards fit side by side */
-  max-width: 150px;
+  width: 30%; /* Make the cards smaller */
+  max-width: 120px; /* Adjust max width */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   flex-grow: 1;
 }
@@ -144,7 +144,7 @@ html, body {
 /* Adjustments for smaller screens */
 @media (max-width: 600px) {
   .charts-heading {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .podium-text {
@@ -156,18 +156,18 @@ html, body {
   }
 
   .first {
-    height: 90%;
-  }
-
-  .second {
     height: 70%;
   }
 
+  .second {
+    height: 50%;
+  }
+
   .third {
-    height: 60%;
+    height: 40%;
   }
 
   .pie-chart-heading {
-    font-size: 16px;
+    font-size: 14px;
   }
 }

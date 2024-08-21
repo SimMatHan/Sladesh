@@ -114,7 +114,7 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
   });
 
 // Function to aggregate beverage data and reset the drink counts daily
-exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
+exports.aggregateBeverageData = functions.pubsub.schedule('0 10 * * *') // Run every day at 11:00 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -124,8 +124,6 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
     let totalShots = 0;
     let totalDrinks = 0;
 
-    const batch = db.batch();
-
     usersSnapshot.forEach(doc => {
       const data = doc.data();
 
@@ -133,8 +131,31 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
       totalWine += data.drinks?.wine || 0;
       totalShots += data.drinks?.shots || 0;
       totalDrinks += data.drinks?.drink || 0;
+    });
 
-      // Reset the user's drinks and totalDrinks
+    // Fetch current totals from the statistics collection
+    const statsRef = db.collection('statistics').doc('totalDrinks');
+    const statsDoc = await statsRef.get();
+
+    if (statsDoc.exists) {
+      const statsData = statsDoc.data();
+      totalBeer += statsData.beer || 0;
+      totalWine += statsData.wine || 0;
+      totalShots += statsData.shots || 0;
+      totalDrinks += statsData.drinks || 0;
+    }
+
+    // Update the statistics collection with the new aggregated totals
+    await statsRef.set({
+      beer: totalBeer,
+      wine: totalWine,
+      shots: totalShots,
+      drinks: totalDrinks,
+    });
+
+    // Reset each user's drinks and totalDrinks
+    const batch = db.batch();
+    usersSnapshot.forEach(doc => {
       batch.update(doc.ref, {
         drinks: { beer: 0, wine: 0, shots: 0, drink: 0 },
         totalDrinks: 0
@@ -143,18 +164,10 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
 
     await batch.commit();
 
-    // Update the statistics collection with the aggregated data
-    const statsRef = db.collection('statistics').doc('totalDrinks');
-    await statsRef.set({
-      beer: totalBeer,
-      wine: totalWine,
-      shots: totalShots,
-      drinks: totalDrinks,
-    });
-
     console.log('Aggregated beverage data and updated statistics/totalDrinks.');
     return null;
   });
+
 
 // Function to update the most sladeshed user daily
 exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight

@@ -127,7 +127,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
         <button className="main-button reset-button" onClick={confirmReset}>Reset Your Drink(s)</button>
       </div>
       <ul className="drink-list">
-        {Object.keys(drinks).map((type) => (
+        {Object.keys(drinks).filter(type => drinks[type] > 0).map((type) => (  // Filter out drinks with count 0
           <li key={type} className="drink-item">
             <div className="drink-icon">{getIcon(type)}</div>
             <div className="drink-name">{type}</div>
