@@ -109,7 +109,7 @@ const Charts = () => {
 
   return (
     <div className="charts-container">
-      <h1 className="charts-heading">Top 3 Drinkers in the Last 12 Hours</h1>
+      <h1 className="charts-heading">Top 3 Drinkers of All Time</h1>
       <div className="podium">
         <div className="podium-block second">
           {topUsers[1] && (

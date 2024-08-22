@@ -47,7 +47,6 @@ html, body {
   width: 100%;
   max-width: 350px; /* Slightly reduce the max width to shrink the podium */
   margin: 0 auto;
-  padding-top: 55px; /* Reduce the padding to shrink the podium area */
   flex-grow: 1;
 }
 

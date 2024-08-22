@@ -14,6 +14,8 @@ const iconMap = {
   shots: <FaGlassWhiskey />,
 };
 
+const drinkOrder = ['beer', 'wine', 'drink', 'shots']; // Define a consistent order
+
 const getIcon = (drinkType) => {
   return iconMap[drinkType.toLowerCase()] || <FaBeer />;
 };
@@ -127,20 +129,22 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
         <button className="main-button reset-button" onClick={confirmReset}>Reset Your Drink(s)</button>
       </div>
       <ul className="drink-list">
-        {Object.keys(drinks).filter(type => drinks[type] > 0).map((type) => (  // Filter out drinks with count 0
-          <li key={type} className="drink-item">
-            <div className="drink-icon">{getIcon(type)}</div>
-            <div className="drink-name">{type}</div>
-            <div className="drink-control">
-              <button className="drink-control-button subtract-button" onClick={() => handleSubtractDrink(type)}>
-                -
-              </button>
-              <div className="drink-count">{drinks[type]}</div>
-              <button className="drink-control-button add-button" onClick={() => handleAddDrink(type)}>
-                +
-              </button>
-            </div>
-          </li>
+        {drinkOrder.map((type) => ( // Use the fixed order
+          drinks[type] > 0 && (
+            <li key={type} className="drink-item">
+              <div className="drink-icon">{getIcon(type)}</div>
+              <div className="drink-name">{type}</div>
+              <div className="drink-control">
+                <button className="drink-control-button subtract-button" onClick={() => handleSubtractDrink(type)}>
+                  -
+                </button>
+                <div className="drink-count">{drinks[type]}</div>
+                <button className="drink-control-button add-button" onClick={() => handleAddDrink(type)}>
+                  +
+                </button>
+              </div>
+            </li>
+          )
         ))}
       </ul>
       {showPopup && (
