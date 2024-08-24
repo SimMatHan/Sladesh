@@ -115,47 +115,40 @@ const RequestForm = ({ user }) => {
     setShowPopup(false);
 
     try {
-      setError('');
-      setSuccess('');
+        setError('');
+        setSuccess('');
 
-      if (!user || !user.displayName || !selectedUser) {
-        throw new Error("Invalid sender or recipient information");
-      }
-
-      const senderDocRef = doc(db, 'users', user.uid);
-      const senderDoc = await getDoc(senderDocRef);
-
-      const recipientDocRef = doc(db, 'users', selectedUser.id);
-      const recipientDoc = await getDoc(recipientDocRef);
-
-      if (senderDoc.exists() && recipientDoc.exists()) {
-        const now = new Date();
-        const recipientData = recipientDoc.data();
-
-        const lastSladesh = senderDoc.data().lastSladesh ? senderDoc.data().lastSladesh.toDate() : null;
-        const twelveHoursInMillis = 12 * 60 * 60 * 1000;
-
-        const canIncrement = !lastSladesh || (now - lastSladesh) >= twelveHoursInMillis;
-
-        if (canIncrement) {
-          const newRecipientSladeshCount = (recipientData.sladeshCount || 0) + 1;
-
-          await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
-          await setDoc(recipientDocRef, {
-            sladeshCount: newRecipientSladeshCount,
-          }, { merge: true });
-
-          // Now create a request after confirming the Sladesh
-          createSingleRequest(); 
-        } else {
-          setError('Sladesh already counted for this session.');
+        if (!user || !user.displayName || !selectedUser) {
+            throw new Error("Invalid sender or recipient information");
         }
-      }
+
+        const senderDocRef = doc(db, 'users', user.uid);
+        const senderDoc = await getDoc(senderDocRef);
+
+        const recipientDocRef = doc(db, 'users', selectedUser.id);
+        const recipientDoc = await getDoc(recipientDocRef);
+
+        if (senderDoc.exists() && recipientDoc.exists()) {
+            const now = new Date();
+            const lastSladesh = senderDoc.data().lastSladesh ? senderDoc.data().lastSladesh.toDate() : null;
+            const twelveHoursInMillis = 12 * 60 * 60 * 1000;
+
+            const canIncrement = !lastSladesh || (now - lastSladesh) >= twelveHoursInMillis;
+
+            if (canIncrement) {
+                await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
+
+                // Now create a request after confirming the Sladesh
+                createSingleRequest(); 
+            } else {
+                setError('Sladesh already counted for this session.');
+            }
+        }
     } catch (error) {
-      console.error("Failed to send request:", error);
-      setError(error.message || 'Failed to send request. Please try again.');
+        console.error("Failed to send request:", error);
+        setError(error.message || 'Failed to send request. Please try again.');
     } finally {
-      setIsSending(false);
+        setIsSending(false);
     }
   };
 
