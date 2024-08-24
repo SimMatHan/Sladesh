@@ -87,6 +87,33 @@ html, body {
   margin-bottom: 20px;
 }
 
+/* Updated styles for expanded rows */
+.arrow-cell {
+  cursor: pointer;
+  text-align: center;
+  font-size: var(--font-size);
+}
+
+.expanded-row {
+  background-color: #f8f9fa;
+}
+
+.details-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  font-size: var(--font-size);
+  color: var(--font-color);
+  flex-wrap: nowrap; /* Prevent wrapping */
+}
+
+.details-container p {
+  margin: 5px 10px;
+  flex: 1 1 auto; /* Allow flexibility without wrapping */
+  min-width: 60px; /* Adjust the minimum width to ensure fitting on smaller screens */
+  text-align: center; /* Center the text for better readability on small screens */
+}
+
 /* Responsive styles */
 @media (max-width: 600px) {
   .scoreboard-table th, .scoreboard-table td {
@@ -111,5 +138,17 @@ html, body {
 
   .scoreboard-container {
     padding: 25px;
+  }
+
+  .details-container {
+    padding: 8px;
+    font-size: 12px;
+    justify-content: space-between; /* Ensures even distribution */
+  }
+
+  .details-container p {
+    margin: 4px 2px; /* Reduce margin to fit within the row */
+    flex: 1 1 20%; /* Ensure all items stay in the same row */
+    min-width: 50px; /* Further reduce min-width for smaller screens */
   }
 }
