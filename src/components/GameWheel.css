@@ -1,0 +1,184 @@
+:root {
+    --primary-color: #d3d2c1;
+    --secondary-color: #150e07;
+    --accent-color-1: #87643d;
+    --accent-color-2: #d4e653;
+    --background-color: #ffffff;
+    --font-color: #343a40;
+    --font-size: 14px;
+  }
+  
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+  }
+  
+  .game-wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .spinner {
+    position: relative;
+    height: 400px;
+    width: 400px;
+    max-width: 90vw;
+    max-height: 90vw;
+    border-radius: 50%;
+    box-shadow: 0px 0px 160px rgba(17, 17, 17, 0.25);
+    overflow: hidden;
+  }
+  
+  .spinner__body {
+    position: absolute;
+    border-top: 200px solid transparent;
+    border-right: 200px solid var(--primary-color);
+    border-bottom: 200px solid var(--primary-color);
+    border-left: 200px solid var(--primary-color);
+    z-index: 200;
+  }
+  
+  .spinner__start-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 140px;
+    width: 140px;
+    border-radius: 50%;
+    font-family: 'Dosis', sans-serif;
+    font-weight: bold;
+    font-size: 36px;
+    color: var(--background-color);
+    background-color: var(--primary-color);
+    outline: none;
+    border: none;
+    user-select: none;
+    z-index: 300;
+    transition: height .1s ease-in, width .2s ease-in, color .1s ease-in, background-color .1s ease-in;
+  }
+  
+  .spinner__start-button:hover {
+    background-color: var(--accent-color-1);
+  }
+  
+  .spinner__plate {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    transition: 3s ease-out;
+  }
+  
+  .spinner__item {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 160px;
+    padding-top: 60px; /* Adjusted padding to move text closer to the center */
+    font-family: 'Dosis', sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    color: var(--secondary-color);
+    text-align: center;
+    transform-origin: 50% 100%;
+    z-index: 10;
+  }
+  
+  .spinner__item--top {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  
+  .spinner__item--bottom {
+    transform: translateX(-50%) rotate(180deg);
+  }
+  
+  /* Popup Styles */
+  .popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 500;
+  }
+  
+  .popup {
+    background-color: var(--background-color);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .popup-content p {
+    font-size: var(--font-size);
+    margin-bottom: 20px;
+    color: var(--font-color);
+  }
+  
+  .popup-button {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .popup-button:hover {
+    background-color: var(--accent-color-1);
+  }
+  
+  .popup-button:active {
+    background-color: var(--accent-color-2);
+  }
+  
+  @media (max-width: 600px) {
+    .spinner {
+      height: 80vw;
+      width: 80vw;
+    }
+  
+    .spinner__body {
+      border-top: 42vw solid transparent;
+      border-right: 41vw solid var(--primary-color);
+      border-bottom: 41vw solid var(--primary-color);
+      border-left: 40vw solid var(--primary-color);
+    }
+  
+    .spinner__start-button {
+      height: 22vw;
+      width: 22vw;
+      font-size: 5vw;
+    }
+  
+    .spinner__item {
+      height: 22vw;
+      padding-top: 40px; /* Adjusted for mobile */
+      font-size: 4vw;
+    }
+  
+    .popup-content p {
+      font-size: 12px;
+    }
+  
+    .popup-button {
+      font-size: 12px;
+      padding: 8px 16px;
+    }
+  }
+  

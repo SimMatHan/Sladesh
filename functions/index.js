@@ -114,7 +114,7 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
   });
 
 // Function to aggregate beverage data and reset the drink counts daily
-exports.aggregateBeverageData = functions.pubsub.schedule('0 10 * * *') // Run every day at 11:00 AM
+exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();

@@ -10,6 +10,7 @@ import UserIdentification from './components/UserIdentification';
 import Scoreboard from './components/Scoreboard';
 import SladeshHub from './components/SladeshHub'; 
 import Charts from './components/Charts'; 
+import GameWheel from './components/GameWheel';
 import { auth, db } from './firebaseConfig';
 
 const App = () => {
@@ -138,6 +139,7 @@ const App = () => {
             <Route path="/scoreboard" element={<Scoreboard user={user} />} />
             <Route path="/sladesh-hub" element={<SladeshHub user={user} onViewed={handleViewedSladeshHub} onNewRequests={handleNewRequests} />} />
             <Route path="/charts" element={<Charts />} />
+            <Route path="/game-wheel" element={<GameWheel user={user} sladeshCount={sladeshCount} setSladeshCount={setSladeshCount} />} />
           </Routes>
         </div>
       </Router>
