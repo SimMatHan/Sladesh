@@ -14,9 +14,7 @@ const positions = ['top', 'right', 'bottom', 'left'];
 
 const GameWheel = ({ user }) => {
   const [isSpinning, setIsSpinning] = useState(false);
-  const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [rotation, setRotation] = useState(0);
-  const [showPopup, setShowPopup] = useState(false);
 
   const handleSpin = () => {
     if (isSpinning) return; // Prevent multiple spins at the same time
@@ -41,46 +39,44 @@ const GameWheel = ({ user }) => {
 
     setRotation(prevRotation => prevRotation + totalRotation);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsSpinning(false);
-      setSelectedOutcome(selected);
-      setShowPopup(true);
-      
-      console.log('Final outcome after spin:', selected.text);
-    }, 3000); // Spin duration
-  };
 
-  const handlePopupResponse = async () => {
-    console.log('Popup displayed for outcome:', selectedOutcome.text);
-
-    switch (selectedOutcome.action) {
-      case 'get_sladesh':
-        if (user && user.uid) {
-          const userDocRef = doc(db, 'users', user.uid);
-          try {
-            await updateDoc(userDocRef, { lastSladesh: null });
-          } catch (error) {
-            console.error('Error updating lastSladesh:', error);
+      // Handle the selected outcome action
+      switch (selected.action) {
+        case 'get_sladesh':
+          console.log('Action: Get your Sladesh back!');
+          if (user && user.uid) {
+            const userDocRef = doc(db, 'users', user.uid);
+            try {
+              await updateDoc(userDocRef, { lastSladesh: null });
+              console.log('lastSladesh reset to null in Firebase');
+            } catch (error) {
+              console.error('Error updating lastSladesh:', error);
+            }
           }
-        }
-        break;
+          break;
 
-      case 'drink_beer':
-        // Logic for drinking a whole beer
-        break;
+        case 'drink_beer':
+          console.log('Action: Drink a whole beer!');
+          // Logic for drinking a whole beer
+          break;
 
-      case 'nothing':
-        // No additional logic needed for "nothing"
-        break;
+        case 'nothing':
+          console.log('Action: Nothing! You\'re safe... for now.');
+          // No additional logic needed for "nothing"
+          break;
 
-      case 'beer_run':
-        // Logic for beer run - maybe prompt the user to fetch drinks
-        break;
+        case 'beer_run':
+          console.log('Action: Beer Run! Time to get the next round.');
+          // Logic for beer run - maybe prompt the user to fetch drinks
+          break;
 
-      default:
-        break;
-    }
-    setShowPopup(false);
+        default:
+          console.log('Unknown action');
+          break;
+      }
+    }, 3000); // Spin duration
   };
 
   return (
@@ -101,18 +97,6 @@ const GameWheel = ({ user }) => {
           ))}
         </div>
       </div>
-      {showPopup && (
-        <div className="popup-backdrop">
-          <div className="popup">
-            <div className="popup-content">
-              <p>{selectedOutcome.text}</p>
-              <button className="popup-button yes-button" onClick={handlePopupResponse}>
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
