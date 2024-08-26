@@ -96,8 +96,16 @@
     transform: translateX(-50%) rotate(0deg);
   }
   
+  .spinner__item--right {
+    transform: translateX(-50%) rotate(90deg);
+  }
+
   .spinner__item--bottom {
     transform: translateX(-50%) rotate(180deg);
+  }
+  
+  .spinner__item--left {
+    transform: translateX(-50%) rotate(270deg);
   }
   
   /* Popup Styles */
@@ -168,8 +176,8 @@
   
     .spinner__item {
       height: 22vw;
-      padding-top: 40px; /* Adjusted for mobile */
-      font-size: 4vw;
+      font-size: 3vw;
+      margin-right: px;
     }
   
     .popup-content p {
