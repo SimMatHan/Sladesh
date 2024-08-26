@@ -1,0 +1,68 @@
+
+.top-header-container {
+    background-color: var(--background-color);
+    padding: 10px 10px 25px 10px;
+    color: var(--secondary-color);
+    display: flex;
+    border-bottom: 1px solid #ddd; /* Similar to the bottom header */
+    justify-content: space-between;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  .top-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--accent-color-2);
+    font-family: inherit; /* Keep consistent with the overall font family */
+  }
+  
+  .user-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .nav-icon-container {
+    position: relative;
+  }
+  
+  .notification-circle {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 600px) {
+    .logo-text {
+      font-size: 20px;
+    }
+  
+    .user-icon {
+      width: 32px;
+      height: 32px;
+    }
+  }
+  
