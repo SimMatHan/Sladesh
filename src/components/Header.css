@@ -1,11 +1,11 @@
 :root {
   --primary-color: #d3d2c1;
-  --secondary-color: #ffffff;
-  --accent-color-1: #d4e653;
-  --accent-color-2: #87643d;
+  --secondary-color: #150e07;
+  --accent-color-1: #87643d;
+  --accent-color-2: #d4e653;
   --background-color: #ffffff;
 }
-
+ 
 .header-container {
   background-color: var(--background-color);
   padding: 10px 10px 25px 10px;
@@ -70,7 +70,7 @@
   }
 
   .nav-icon {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
   }
 }

@@ -133,7 +133,7 @@ const App = () => {
       <GlobalStyle />
       <Router>
         <TopHeader sladeshCount={!hasViewedHub ? sladeshCount : 0} /> {/* Add the TopHeader */}
-        <div style={{ paddingTop: '80px', paddingBottom: '60px' }}> {/* Adjust paddingTop to accommodate the top header */}
+        <div style={{ paddingTop: '60px', paddingBottom: '60px' }}> {/* Adjust paddingTop to accommodate the top header */}
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
             <Route path="/requests" element={<RequestForm user={user} />} />
