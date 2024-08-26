@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import GlobalStyle from './globalStyles';
+import TopHeader from './components/TopHeader'; // Import the TopHeader component
 import Header from './components/Header';
 import Home from './components/Home';
 import RequestForm from './components/RequestForm';
@@ -131,8 +132,8 @@ const App = () => {
     <>
       <GlobalStyle />
       <Router>
-        <Header sladeshCount={!hasViewedHub ? sladeshCount : 0} />
-        <div style={{ paddingBottom: '60px' }}>
+        <TopHeader sladeshCount={!hasViewedHub ? sladeshCount : 0} /> {/* Add the TopHeader */}
+        <div style={{ paddingTop: '80px', paddingBottom: '60px' }}> {/* Adjust paddingTop to accommodate the top header */}
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
             <Route path="/requests" element={<RequestForm user={user} />} />
@@ -142,6 +143,7 @@ const App = () => {
             <Route path="/game-wheel" element={<GameWheel user={user} sladeshCount={sladeshCount} setSladeshCount={setSladeshCount} />} />
           </Routes>
         </div>
+        <Header sladeshCount={!hasViewedHub ? sladeshCount : 0} />
       </Router>
     </>
   );

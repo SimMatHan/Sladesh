@@ -4,12 +4,12 @@ import './Header.css';
 import Sladesh from '../assets/headersvgs/RocketLaunchOutlined.svg';
 import Drink from '../assets/headersvgs/LocalDrinkOutlined.svg';
 import Leaderboard from '../assets/headersvgs/LeaderboardOutlined.svg';
-import SladeshHub from '../assets/headersvgs/MarkunreadMailboxOutlined.svg';
+import Videogame from '../assets/headersvgs/VideogameOutlined.svg'; // Import the outlined Videogame icon
 import Chart from '../assets/headersvgs/AreaChartOutlined.svg';
 import SladeshFilled from '../assets/headersvgs/RocketLaunchFilled.svg';
 import DrinkFilled from '../assets/headersvgs/LocalDrinkFilled.svg';
 import LeaderboardFilled from '../assets/headersvgs/LeaderboardFilled.svg';
-import SladeshHubFilled from '../assets/headersvgs/MarkunreadMailboxFilled.svg';
+import VideogameFilled from '../assets/headersvgs/VideogameFilled.svg'; // Import the filled Videogame icon
 import ChartFilled from '../assets/headersvgs/AreaChartFilled.svg';
 
 const Header = ({ sladeshCount }) => {
@@ -33,14 +33,13 @@ const Header = ({ sladeshCount }) => {
               className="nav-icon"
             />
           </Link>
-          <Link to="/sladesh-hub">
+          <Link to="/game-wheel">
             <div className="nav-icon-container">
               <img
-                src={location.pathname === '/sladesh-hub' ? SladeshHubFilled : SladeshHub}
-                alt="Sladesh Hub"
+                src={location.pathname === '/game-wheel' ? VideogameFilled : Videogame}
+                alt="Game Wheel"
                 className="nav-icon"
               />
-              {sladeshCount > 0 && <div className="notification-circle">{sladeshCount}</div>}
             </div>
           </Link>
           <Link to="/scoreboard">
