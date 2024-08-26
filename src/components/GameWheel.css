@@ -20,33 +20,42 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: calc(100vh - 130px);
   width: 100%;
   box-sizing: border-box;
-  height: calc(100vh - 130px);
+  padding: 0 10px; /* Added padding for better mobile view */
 }
 
-.spinner {
+.credits-display {
+  margin-bottom: 10px; /* Space between credits and the wheel */
+  font-family: 'Dosis', sans-serif;
+  font-weight: bold;
+  font-size: 20px; /* Adjust font size for visibility */
+  color: var(--secondary-color);
+  text-align: center;
+  padding: 10px; /* Added padding for better spacing */
+}
+
+#wheelOfFortune {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 400px;
   width: 400px;
   max-width: 90vw;
   max-height: 90vw;
+}
+
+#wheel {
+  display: block;
   border-radius: 50%;
   box-shadow: 0px 0px 20px rgba(17, 17, 17, 0.15);
   overflow: hidden;
 }
 
-.spinner__body {
-  position: absolute;
-  border-top: 200px solid transparent;
-  border-right: 200px solid var(--primary-color);
-  border-bottom: 200px solid var(--primary-color);
-  border-left: 200px solid var(--primary-color);
-  z-index: 200;
-}
-
-.spinner__start-button {
+#spin {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -63,50 +72,25 @@ html, body {
   border: none;
   user-select: none;
   z-index: 300;
-  transition: height .1s ease-in, width .2s ease-in, color .1s ease-in, background-color .1s ease-in;
+  transition: height 0.1s ease-in, width 0.2s ease-in, color 0.1s ease-in, background-color 0.1s ease-in;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 0 8px currentColor, 0 0px 15px 5px rgba(0, 0, 0, 0.6);
 }
 
-.spinner__start-button:hover {
+#spin:hover {
   background-color: var(--accent-color-1);
 }
 
-.spinner__plate {
+#spin::after {
+  content: '';
   position: absolute;
-  height: 100%;
-  width: 100%;
-  transition: 3s ease-out;
-}
-
-.spinner__item {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 160px;
-  padding-top: 60px; /* Adjusted padding to move text closer to the center */
-  font-family: 'Dosis', sans-serif;
-  font-weight: bold;
-  font-size: 18px;
-  color: var(--secondary-color);
-  text-align: center;
-  transform-origin: 50% 100%;
-  z-index: 10;
-}
-
-.spinner__item--top {
-  transform: translateX(-50%) rotate(0deg);
-}
-
-.spinner__item--right {
-  transform: translateX(-50%) rotate(90deg);
-}
-
-.spinner__item--bottom {
-  transform: translateX(-50%) rotate(180deg);
-}
-
-.spinner__item--left {
-  transform: translateX(-50%) rotate(270deg);
+  top: -17px;
+  border: 10px solid transparent;
+  border-bottom-color: currentColor;
+  border-top: none;
 }
 
 .outcome-display {
@@ -120,31 +104,23 @@ html, body {
 
 /* Mobile adjustments */
 @media (max-width: 600px) {
-  .spinner {
-      height: 80vw;
-      width: 80vw;
+  #wheelOfFortune {
+    height: 80vw;
+    width: 80vw;
   }
 
-  .spinner__body {
-      border-top: 42vw solid transparent;
-      border-right: 41vw solid var(--primary-color);
-      border-bottom: 41vw solid var(--primary-color);
-      border-left: 40vw solid var(--primary-color);
+  #spin {
+    height: 22vw;
+    width: 22vw;
+    font-size: 5vw;
   }
 
-  .spinner__start-button {
-      height: 22vw;
-      width: 22vw;
-      font-size: 5vw;
-  }
-
-  .spinner__item {
-      height: 22vw;
-      font-size: 3vw;
-      margin-right: px;
+  .credits-display {
+    font-size: 5vw; /* Adjust font size for smaller screens */
+    padding: 5px; /* Adjust padding for smaller screens */
   }
 
   .outcome-display {
-      font-size: 5vw;
+    font-size: 5vw;
   }
 }
