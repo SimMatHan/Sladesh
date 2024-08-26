@@ -27,6 +27,7 @@ html, body {
   box-sizing: border-box;
   overflow-y: hidden;
   width: 100%;
+  height: calc(100vh - 130px);
 }
 
 .scoreboard-table {
