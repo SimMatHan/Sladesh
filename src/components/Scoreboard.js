@@ -53,7 +53,7 @@ const Scoreboard = () => {
             <th>Total Drinks</th>
             <th>Amount of Sladesh'ed</th>
             <th>Sladesh Used</th>
-            <th>Details</th>
+            <th></th> {/* Empty header for the arrow */}
           </tr>
         </thead>
         <tbody>
@@ -71,10 +71,10 @@ const Scoreboard = () => {
                   <tr className="expanded-row">
                     <td colSpan="5">
                       <div className="details-container">
-                        <p>Beer: <strong>{user.drinks.beer} </strong></p>
-                        <p>Wine: <strong>{user.drinks.wine} </strong></p>
-                        <p>Shots: <strong>{user.drinks.shots} </strong></p>
-                        <p>Drinks: <strong>{user.drinks.drink} </strong></p>
+                        <p>Beer: <strong>{user.drinks.beer}</strong></p>
+                        <p>Wine: <strong>{user.drinks.wine}</strong></p>
+                        <p>Shots: <strong>{user.drinks.shots}</strong></p>
+                        <p>Drinks: <strong>{user.drinks.drink}</strong></p>
                       </div>
                     </td>
                   </tr>

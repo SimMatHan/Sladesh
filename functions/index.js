@@ -118,7 +118,7 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
-    
+
     let totalBeer = 0;
     let totalWine = 0;
     let totalShots = 0;
@@ -133,7 +133,19 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
       totalDrinks += data.drinks?.drink || 0;
     });
 
-    // Fetch current totals from the statistics collection
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Save monthly data
+    const monthRef = db.collection('statistics').doc(`totalDrinks/${monthYear}`);
+    await monthRef.set({
+      beer: totalBeer,
+      wine: totalWine,
+      shots: totalShots,
+      drinks: totalDrinks,
+    });
+
+    // Update the overall totals
     const statsRef = db.collection('statistics').doc('totalDrinks');
     const statsDoc = await statsRef.get();
 
@@ -145,7 +157,6 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
       totalDrinks += statsData.drinks || 0;
     }
 
-    // Update the statistics collection with the new aggregated totals
     await statsRef.set({
       beer: totalBeer,
       wine: totalWine,
@@ -169,6 +180,7 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
   });
 
 
+
 // Function to update the most sladeshed user daily
 exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
   .timeZone('Europe/Copenhagen')
@@ -188,14 +200,25 @@ exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs
       }
     });
 
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Store the most sladeshed user for the current month
+    await db.collection('statistics').doc(`mostSladeshedUser/${monthYear}`).set({
+      username: mostSladeshedUser.username,
+      totalSladeshes: mostSladeshedUser.totalSladeshes,
+    });
+
+    // Optionally, you can also update the overall stats
     await db.collection('statistics').doc('mostSladeshedUser').set({
       username: mostSladeshedUser.username,
       totalSladeshes: mostSladeshedUser.totalSladeshes,
     });
 
-    console.log('Updated most sladeshed user:', mostSladeshedUser.username);
+    console.log('Updated most sladeshed user for the month:', mostSladeshedUser.username);
     return null;
   });
+
 
 // Function to increment sladesh count on sladesh creation and update total sladeshes
 exports.incrementSladeshCount = functions.firestore
@@ -266,7 +289,10 @@ exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs
       }
     });
 
-    await db.collection('statistics').doc('mostCheckedInUser').set({
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    await db.collection('statistics').doc(`mostCheckedInUser/${monthYear}`).set({
       username: mostCheckedInUser.username,
       totalCheckIns: mostCheckedInUser.checkInCount,
     });
@@ -274,3 +300,47 @@ exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs
     console.log('Updated most checked-in user:', mostCheckedInUser.username);
     return null;
   });
+
+  exports.updateTopUsers = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+  .timeZone('Europe/Copenhagen')
+  .onRun(async (context) => {
+    const usersSnapshot = await db.collection('users').get();
+
+    const usersList = [];
+
+    usersSnapshot.forEach(doc => {
+      const data = doc.data();
+
+      if (data.highestDrinksIn12Hours) {
+        usersList.push({
+          username: data.username,
+          highestDrinksIn12Hours: data.highestDrinksIn12Hours,
+        });
+      }
+    });
+
+    // Sort users by highestDrinksIn12Hours in descending order
+    usersList.sort((a, b) => b.highestDrinksIn12Hours - a.highestDrinksIn12Hours);
+
+    // Get the top 3 users
+    const topThree = usersList.slice(0, 3);
+
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Create the path and store the top users for the current month
+    await db.collection('statistics').doc(`topUsers/${monthYear}`).set({
+      monthYear: monthYear,
+      topThree: topThree
+    });
+
+    // Optionally, you can also update the overall stats
+    await db.collection('statistics').doc('topUsers/overall').set({
+      monthYear: 'overall',
+      topThree: topThree
+    });
+
+    console.log('Updated top users for the month:', monthYear, topThree);
+    return null;
+  });
+

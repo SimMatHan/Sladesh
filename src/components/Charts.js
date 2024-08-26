@@ -18,63 +18,90 @@ const Charts = () => {
   const [drinkData, setDrinkData] = useState({ beer: 0, wine: 0, shots: 0, drinks: 0 });
   const [mostSladeshedUser, setMostSladeshedUser] = useState({});
   const [mostCheckedInUser, setMostCheckedInUser] = useState({});
+  const [selectedMonth, setSelectedMonth] = useState('overall');
+  const [availableMonths, setAvailableMonths] = useState([]);
 
-  const fetchTopUsers = async () => {
+  // Fetch available months for dropdown
+  const fetchAvailableMonths = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, 'users'));
-      const usersList = [];
-
-      querySnapshot.forEach((doc) => {
-        const userData = doc.data();
-        if (userData.highestDrinksIn12Hours) {
-          usersList.push({
-            username: userData.username,
-            highestDrinksIn12Hours: userData.highestDrinksIn12Hours,
-          });
-        }
+      const monthsSnapshot = await getDocs(collection(db, 'statistics/totalDrinks'));
+      const monthsList = [];
+      
+      monthsSnapshot.forEach((doc) => {
+        monthsList.push(doc.id);  // Assuming the doc IDs are in the format 'YYYY-MM'
       });
 
-      // Sort users by highestDrinksIn12Hours in descending order
-      usersList.sort((a, b) => b.highestDrinksIn12Hours - a.highestDrinksIn12Hours);
+      // Ensure that "2024-08" is always included
+      if (!monthsList.includes('2024-08')) {
+        monthsList.push('2024-08');
+      }
 
-      // Get the top 3 users
-      const topThree = usersList.slice(0, 3);
-      setTopUsers(topThree);
+      setAvailableMonths(monthsList);
+    } catch (error) {
+      console.error("Error fetching months: ", error);
+    }
+  };
+
+  const fetchTopUsers = async (monthYear) => {
+    try {
+      let docRef;
+      if (monthYear === 'overall') {
+        docRef = doc(db, 'statistics', 'topUsers/overall');
+      } else {
+        docRef = doc(db, 'statistics', `topUsers/${monthYear}`);
+      }
+
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setTopUsers(docSnap.data().topThree);
+      } else {
+        console.log("No top users data for the selected period!");
+        setTopUsers([]);  // Clear the data if no record is found
+      }
     } catch (error) {
       console.error("Error fetching top users: ", error);
     }
   };
 
-  const fetchDrinkData = async () => {
+  const fetchDrinkData = async (monthYear) => {
     try {
-      const docRef = doc(db, 'statistics', 'totalDrinks');
+      let docRef;
+      if (monthYear === 'overall') {
+        docRef = doc(db, 'statistics', 'totalDrinks');
+      } else {
+        docRef = doc(db, 'statistics', `totalDrinks/${monthYear}`);
+      }
+
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         console.log("Fetched drink data:", docSnap.data()); // Log the fetched data
         setDrinkData(docSnap.data());
       } else {
-        console.log("No such document for totalDrinks!");
+        console.log("No such document for selected period!");
       }
 
-      const sladeshedRef = doc(db, 'statistics', 'mostSladeshedUser');
+      const sladeshedRef = doc(db, 'statistics', `mostSladeshedUser/${monthYear}`);
       const sladeshedSnap = await getDoc(sladeshedRef);
 
       if (sladeshedSnap.exists()) {
         console.log("Fetched most Sladeshed User:", sladeshedSnap.data()); // Log the fetched data
         setMostSladeshedUser(sladeshedSnap.data());
       } else {
-        console.log("No such document for mostSladeshedUser!");
+        console.log("No such document for mostSladeshedUser in selected period!");
+        setMostSladeshedUser({});
       }
 
-      const checkedInRef = doc(db, 'statistics', 'mostCheckedInUser');
+      const checkedInRef = doc(db, 'statistics', `mostCheckedInUser/${monthYear}`);
       const checkedInSnap = await getDoc(checkedInRef);
 
       if (checkedInSnap.exists()) {
         console.log("Fetched most Checked-In User:", checkedInSnap.data()); // Log the fetched data
         setMostCheckedInUser(checkedInSnap.data());
       } else {
-        console.log("No such document for mostCheckedInUser!");
+        console.log("No such document for mostCheckedInUser in selected period!");
+        setMostCheckedInUser({});
       }
     } catch (error) {
       console.error("Error fetching drink data: ", error);
@@ -82,9 +109,10 @@ const Charts = () => {
   };
 
   useEffect(() => {
-    fetchTopUsers();
-    fetchDrinkData();
-  }, []);
+    fetchAvailableMonths(); // Fetch available months
+    fetchTopUsers(selectedMonth); // Fetch top users based on selected month
+    fetchDrinkData(selectedMonth); // Fetch drink data based on selected month
+  }, [selectedMonth]);
 
   const data = {
     labels: ['Beer', 'Wine', 'Shots', 'Drinks'],
@@ -109,7 +137,17 @@ const Charts = () => {
 
   return (
     <div className="charts-container">
-      <h1 className="charts-heading">Top 3 Drinkers of All Time</h1>
+      <div className="filter-container">
+        <label htmlFor="month-select">Filter by Month:</label>
+        <select id="month-select" onChange={(e) => setSelectedMonth(e.target.value)}>
+          <option value="overall">Overall</option>
+          {availableMonths.map(month => (
+            <option key={month} value={month}>{month}</option>
+          ))}
+        </select>
+      </div>
+
+      <h1 className="charts-heading">Top 3 Drinkers</h1>
       <div className="podium">
         <div className="podium-block second">
           {topUsers[1] && (

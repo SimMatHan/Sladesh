@@ -87,11 +87,12 @@ html, body {
   margin-bottom: 20px;
 }
 
-/* Updated styles for expanded rows */
+/* Updated styles for the arrow */
 .arrow-cell {
-  cursor: pointer;
   text-align: center;
+  cursor: pointer;
   font-size: var(--font-size);
+  width: 30px; /* Adjust width to fit the arrow nicely */
 }
 
 .expanded-row {
