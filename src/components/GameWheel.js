@@ -211,6 +211,7 @@ const GameWheel = ({ user }) => {
         <div id="spin" ref={spinRef} onClick={handleSpin}>
           SPIN
         </div>
+        <div id="top-pointer"></div> {/* This is the pointer at the top of the wheel */}
       </div>
       <div className="outcome-display">
         {outcomeMessage}
