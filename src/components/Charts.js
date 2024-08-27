@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore'; // Removed getDocs
 import { db } from '../firebaseConfig';
 import { Pie } from 'react-chartjs-2';
 import {
@@ -21,22 +21,42 @@ const Charts = () => {
   const [selectedMonth, setSelectedMonth] = useState('overall');
   const [availableMonths, setAvailableMonths] = useState([]);
 
+  // Mapping for month numbers to names
+  const monthNames = {
+    '01': 'January',
+    '02': 'February',
+    '03': 'March',
+    '04': 'April',
+    '05': 'May',
+    '06': 'June',
+    '07': 'July',
+    '08': 'August',
+    '09': 'September',
+    '10': 'October',
+    '11': 'November',
+    '12': 'December',
+  };
+
+  // Convert 'YYYY-MM' to 'MonthName YYYY'
+  const formatMonthYear = (monthYear) => {
+    if (monthYear === 'overall') return 'Overall';
+    const [year, month] = monthYear.split('-');
+    return `${monthNames[month]} ${year}`;
+  };
+
   // Fetch available months for dropdown
   const fetchAvailableMonths = async () => {
     try {
-      const monthsSnapshot = await getDocs(collection(db, 'statistics/totalDrinks'));
-      const monthsList = [];
+      const monthsSnapshot = await getDoc(doc(db, 'statistics', 'totalDrinks'));
+      const monthsList = Object.keys(monthsSnapshot.data() || {});
+
+      // Ensure "Overall" is always included and at the top
+      const uniqueMonthsList = Array.from(new Set(['overall', ...monthsList]));
       
-      monthsSnapshot.forEach((doc) => {
-        monthsList.push(doc.id);  // Assuming the doc IDs are in the format 'YYYY-MM'
-      });
+      // Sort months to have "Overall" first and the rest in chronological order
+      uniqueMonthsList.sort((a, b) => (a === 'overall' ? -1 : b === 'overall' ? 1 : a.localeCompare(b)));
 
-      // Ensure that "2024-08" is always included
-      if (!monthsList.includes('2024-08')) {
-        monthsList.push('2024-08');
-      }
-
-      setAvailableMonths(monthsList);
+      setAvailableMonths(uniqueMonthsList);
     } catch (error) {
       console.error("Error fetching months: ", error);
     }
@@ -44,20 +64,19 @@ const Charts = () => {
 
   const fetchTopUsers = async (monthYear) => {
     try {
-      let docRef;
-      if (monthYear === 'overall') {
-        docRef = doc(db, 'statistics', 'topUsers/overall');
-      } else {
-        docRef = doc(db, 'statistics', `topUsers/${monthYear}`);
-      }
+      const topUsersRef = doc(db, 'statistics', 'topUsers');
+      const topUsersDoc = await getDoc(topUsersRef);
 
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setTopUsers(docSnap.data().topThree);
+      if (topUsersDoc.exists()) {
+        const topUsersData = topUsersDoc.data()[monthYear];
+        if (topUsersData) {
+          setTopUsers([topUsersData.topOne, topUsersData.topTwo, topUsersData.topThree]);
+        } else {
+          setTopUsers([]); // Clear the data if no record is found
+        }
       } else {
         console.log("No top users data for the selected period!");
-        setTopUsers([]);  // Clear the data if no record is found
+        setTopUsers([]);
       }
     } catch (error) {
       console.error("Error fetching top users: ", error);
@@ -66,41 +85,38 @@ const Charts = () => {
 
   const fetchDrinkData = async (monthYear) => {
     try {
-      let docRef;
-      if (monthYear === 'overall') {
-        docRef = doc(db, 'statistics', 'totalDrinks');
-      } else {
-        docRef = doc(db, 'statistics', `totalDrinks/${monthYear}`);
-      }
+      const drinkDataRef = doc(db, 'statistics', 'totalDrinks');
+      const drinkDataDoc = await getDoc(drinkDataRef);
 
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        console.log("Fetched drink data:", docSnap.data()); // Log the fetched data
-        setDrinkData(docSnap.data());
+      if (drinkDataDoc.exists()) {
+        const drinkData = drinkDataDoc.data()[monthYear];
+        if (drinkData) {
+          setDrinkData(drinkData);
+        } else {
+          setDrinkData({ beer: 0, wine: 0, shots: 0, drinks: 0 });
+        }
       } else {
         console.log("No such document for selected period!");
+        setDrinkData({ beer: 0, wine: 0, shots: 0, drinks: 0 });
       }
 
-      const sladeshedRef = doc(db, 'statistics', `mostSladeshedUser/${monthYear}`);
+      const sladeshedRef = doc(db, 'statistics', 'mostSladeshedUser');
       const sladeshedSnap = await getDoc(sladeshedRef);
+      const sladeshedData = sladeshedSnap.data()[monthYear];
 
-      if (sladeshedSnap.exists()) {
-        console.log("Fetched most Sladeshed User:", sladeshedSnap.data()); // Log the fetched data
-        setMostSladeshedUser(sladeshedSnap.data());
+      if (sladeshedData) {
+        setMostSladeshedUser(sladeshedData);
       } else {
-        console.log("No such document for mostSladeshedUser in selected period!");
         setMostSladeshedUser({});
       }
 
-      const checkedInRef = doc(db, 'statistics', `mostCheckedInUser/${monthYear}`);
+      const checkedInRef = doc(db, 'statistics', 'mostCheckedInUser');
       const checkedInSnap = await getDoc(checkedInRef);
+      const checkedInData = checkedInSnap.data()[monthYear];
 
-      if (checkedInSnap.exists()) {
-        console.log("Fetched most Checked-In User:", checkedInSnap.data()); // Log the fetched data
-        setMostCheckedInUser(checkedInSnap.data());
+      if (checkedInData) {
+        setMostCheckedInUser(checkedInData);
       } else {
-        console.log("No such document for mostCheckedInUser in selected period!");
         setMostCheckedInUser({});
       }
     } catch (error) {
@@ -140,9 +156,8 @@ const Charts = () => {
       <div className="filter-container">
         <label htmlFor="month-select">Filter by Month:</label>
         <select id="month-select" onChange={(e) => setSelectedMonth(e.target.value)}>
-          <option value="overall">Overall</option>
           {availableMonths.map(month => (
-            <option key={month} value={month}>{month}</option>
+            <option key={month} value={month}>{formatMonthYear(month)}</option>
           ))}
         </select>
       </div>

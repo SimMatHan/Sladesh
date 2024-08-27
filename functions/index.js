@@ -181,8 +181,8 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
 
 
 
-// Function to update the most sladeshed user daily
-exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+  // Function to update the most sladeshed user daily
+  exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -204,24 +204,24 @@ exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs
     const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     // Store the most sladeshed user for the current month
-    await db.collection('statistics').doc(`mostSladeshedUser/${monthYear}`).set({
-      username: mostSladeshedUser.username,
-      totalSladeshes: mostSladeshedUser.totalSladeshes,
-    });
+    const mostSladeshedUserRef = db.collection('statistics').doc('mostSladeshedUser');
+    await mostSladeshedUserRef.set({
+      [monthYear]: mostSladeshedUser
+    }, { merge: true });
 
-    // Optionally, you can also update the overall stats
-    await db.collection('statistics').doc('mostSladeshedUser').set({
-      username: mostSladeshedUser.username,
-      totalSladeshes: mostSladeshedUser.totalSladeshes,
-    });
+    // Optionally, update the overall stats
+    await mostSladeshedUserRef.set({
+      overall: mostSladeshedUser
+    }, { merge: true });
 
-    console.log('Updated most sladeshed user for the month:', mostSladeshedUser.username);
+    console.log('Updated most sladeshed user for the month:', monthYear);
     return null;
   });
 
 
-// Function to increment sladesh count on sladesh creation and update total sladeshes
-exports.incrementSladeshCount = functions.firestore
+
+  // Function to increment sladesh count on sladesh creation and update total sladeshes
+  exports.incrementSladeshCount = functions.firestore
   .document('requests/{requestId}')
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data();
@@ -253,8 +253,8 @@ exports.incrementSladeshCount = functions.firestore
     return null;
   });
 
-// Function to increment check-in count on user check-in
-exports.incrementCheckInCount = functions.firestore
+  // Function to increment check-in count on user check-in
+  exports.incrementCheckInCount = functions.firestore
   .document('users/{userId}')
   .onUpdate(async (change, context) => {
     const before = change.before.data();
@@ -270,21 +270,21 @@ exports.incrementCheckInCount = functions.firestore
     return null;
   });
 
-// Function to update the most checked-in user daily
-exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+  // Function to update the most checked-in user daily
+  exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
-    let mostCheckedInUser = { username: '', checkInCount: 0 };
+    let mostCheckedInUser = { username: '', totalCheckIns: 0 };
 
     usersSnapshot.forEach(doc => {
       const data = doc.data();
 
-      if (data.checkInCount > mostCheckedInUser.checkInCount) {
+      if (data.checkInCount > mostCheckedInUser.totalCheckIns) {
         mostCheckedInUser = {
           username: data.username,
-          checkInCount: data.checkInCount,
+          totalCheckIns: data.checkInCount,
         };
       }
     });
@@ -292,14 +292,21 @@ exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs
     const now = new Date();
     const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    await db.collection('statistics').doc(`mostCheckedInUser/${monthYear}`).set({
-      username: mostCheckedInUser.username,
-      totalCheckIns: mostCheckedInUser.checkInCount,
-    });
+    // Store the most checked-in user for the current month
+    const mostCheckedInUserRef = db.collection('statistics').doc('mostCheckedInUser');
+    await mostCheckedInUserRef.set({
+      [monthYear]: mostCheckedInUser
+    }, { merge: true });
 
-    console.log('Updated most checked-in user:', mostCheckedInUser.username);
+    // Optionally, update the overall stats
+    await mostCheckedInUserRef.set({
+      overall: mostCheckedInUser
+    }, { merge: true });
+
+    console.log('Updated most checked-in user for the month:', monthYear);
     return null;
   });
+
 
   exports.updateTopUsers = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
   .timeZone('Europe/Copenhagen')
@@ -325,20 +332,32 @@ exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs
     // Get the top 3 users
     const topThree = usersList.slice(0, 3);
 
+    // Separate top users
+    const topOne = topThree[0] || {};
+    const topTwo = topThree[1] || {};
+    const topThreeUser = topThree[2] || {};
+
     const now = new Date();
     const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    // Create the path and store the top users for the current month
-    await db.collection('statistics').doc(`topUsers/${monthYear}`).set({
-      monthYear: monthYear,
-      topThree: topThree
-    });
+    // Store the top users for the current month
+    const topUsersRef = db.collection('statistics').doc('topUsers');
+    await topUsersRef.set({
+      [monthYear]: {
+        topOne: topOne,
+        topTwo: topTwo,
+        topThree: topThreeUser
+      }
+    }, { merge: true });
 
-    // Optionally, you can also update the overall stats
-    await db.collection('statistics').doc('topUsers/overall').set({
-      monthYear: 'overall',
-      topThree: topThree
-    });
+    // Optionally, update the overall stats
+    await topUsersRef.set({
+      overall: {
+        topOne: topOne,
+        topTwo: topTwo,
+        topThree: topThreeUser
+      }
+    }, { merge: true });
 
     console.log('Updated top users for the month:', monthYear, topThree);
     return null;
