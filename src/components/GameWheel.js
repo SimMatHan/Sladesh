@@ -18,7 +18,8 @@ const sectors = outcomes.map((outcome, index) => {
 const rand = (m, M) => Math.random() * (M - m) + m;
 const PI = Math.PI;
 const TAU = 2 * PI;
-const friction = 0.995; // Adjusted for a more natural slow down
+// Increased friction to slow the wheel down faster
+const friction = 0.985; // Adjusted for a faster slow down
 
 const MAX_SPINS_PER_DAY = 5;
 
@@ -169,7 +170,8 @@ const GameWheel = ({ user }) => {
   const handleSpin = async () => {
     if (!isSpinning && remainingSpins > 0) {
       setIsSpinning(true);
-      setAngVel(rand(0.25, 0.35)); // Adjusted for a slower start
+      // Increase initial angular velocity for a quicker spin
+      setAngVel(rand(0.3, 0.5)); // Adjusted for a faster start
       setSelectedOutcome(''); // Clear the outcome when spinning starts
 
       // Update remaining spins

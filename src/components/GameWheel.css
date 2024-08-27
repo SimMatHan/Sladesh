@@ -55,6 +55,19 @@ html, body {
   overflow: hidden;
 }
 
+#pointer {
+  position: absolute;
+  top: -10px; /* Position the pointer at the top of the wheel */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 20px solid var(--secondary-color);
+  z-index: 400; /* Ensure pointer is above the wheel */
+}
+
 #spin {
   position: absolute;
   top: 50%;
@@ -122,5 +135,10 @@ html, body {
 
   .outcome-display {
     font-size: 5vw;
+  }
+
+  #pointer {
+    top: -5px; /* Adjust the pointer position for smaller screens */
+    border-bottom-width: 15px; /* Adjust the size of the pointer */
   }
 }
