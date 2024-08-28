@@ -4,6 +4,11 @@
   --accent-color-1: #87643d;
   --accent-color-2: #d4e653;
   --background-color: #ffffff;
+  --success-color: #4CAF50; /* New success color */
+  --pending-color: #FF9800; /* Color for pending status */
+  --completed-color: #2196F3; /* Color for completed status */
+  --confirmed-color: #4CAF50; /* Color for confirmed status */
+  --button-hover-color: #FF5722; /* Hover color for confirmation button */
 }
 
 html, body {
@@ -133,13 +138,86 @@ html, body {
 }
 
 .request-item p {
-  margin: 0;
+  margin: 0 0 10px; 
   padding: 8px;
   width: 100%;
   font-weight: 700;
   background-color: var(--secondary-color);
   color: var(--background-color);
   border-radius: 5px;
+}
+
+/* Status Badges */
+.pending-badge {
+  background-color: var(--pending-color);
+  color: var(--background-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.completed-badge {
+  background-color: var(--completed-color);
+  color: var(--background-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.confirmed-badge {
+  background-color: var(--confirmed-color);
+  color: var(--background-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+/* Confirmation Button */
+.confirm-button {
+  background-color: var(--accent-color-1);
+  color: var(--background-color);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.confirm-button:hover {
+  background-color: var(--button-hover-color);
+}
+
+.completion-message,
+.confirmation-message {
+  font-size: 14px;
+  color: var(--success-color);
+  margin-top: 10px;
+}
+
+.waiting-message {
+  font-size: 14px;
+  color: var(--primary-color);
+  margin-top: 10px;
+}
+
+.completed-button {
+  background-color: #ccc; /* Light gray */
+  color: #666; /* Darker gray for text */
+  border: none;
+  padding: 10px 20px;
+  cursor: not-allowed; /* Show that the button is not clickable */
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+.completed {
+  background-color: #d4edda; /* Green background for completed items */
+  color: #155724;
 }
 
 /* Sent View Styles */
@@ -183,5 +261,14 @@ html, body {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-
-
+/* Success Message */
+.success-message {
+  color: var(--success-color);
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 20px;
+  background-color: var(--background-color);
+  border: 2px solid var(--success-color);
+  border-radius: 10px;
+  padding: 10px 15px;
+}

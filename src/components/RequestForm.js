@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, createRequest } from '../services/requestService';
+import { getUsers, createRequest, updateRequestStatus } from '../services/requestService';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import './RequestForm.css'; 
@@ -109,7 +109,7 @@ const RequestForm = ({ user }) => {
     requestGyroscopePermission();
   };
 
-  const confirmSladesh = async () => {
+  const confirmSladesh = async (requestId) => {
     if (isSending) return;
     setIsSending(true);
     setShowPopup(false);
@@ -139,7 +139,8 @@ const RequestForm = ({ user }) => {
                 await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
 
                 // Now create a request after confirming the Sladesh
-                createSingleRequest(); 
+                const requestId = await createSingleRequest();
+                await updateRequestStatus(requestId, 'completed');  // Update the status after completion
             } else {
                 setError('Sladesh already counted for this session.');
             }
@@ -153,17 +154,18 @@ const RequestForm = ({ user }) => {
   };
 
   const createSingleRequest = async () => {
-    try {
-      await createRequest({
-        sender: user.displayName,
-        recipient: selectedUser.username,
-        message: `Sladesh by ${user.displayName}`,
-      });
-      showConfirmationPopup();
-      setSuccess('Sladesh sent successfully!');
-    } catch (error) {
-      console.error("Failed to create request:", error);
-    }
+      try {
+          const docRef = await createRequest({
+              sender: user.displayName,
+              recipient: selectedUser.username,
+              message: `Sladesh by ${user.displayName}`,
+          });
+          showConfirmationPopup();
+          setSuccess('Sladesh sent successfully!');
+          return docRef.id;  // Return the request ID
+      } catch (error) {
+          console.error("Failed to create request:", error);
+      }
   };
 
   const showConfirmationPopup = () => {

@@ -73,21 +73,21 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs tw
     }
   });
 
-// Function to list all users (for your listUsers function)
-exports.listUsers = functions.https.onCall(async (data, context) => {
-  const usersRef = db.collection('users');
-  const querySnapshot = await usersRef.get();
+  // Function to list all users (for your listUsers function)
+  exports.listUsers = functions.https.onCall(async (data, context) => {
+    const usersRef = db.collection('users');
+    const querySnapshot = await usersRef.get();
 
-  const users = [];
-  querySnapshot.forEach(doc => {
-    users.push({ id: doc.id, ...doc.data() });
+    const users = [];
+    querySnapshot.forEach(doc => {
+      users.push({ id: doc.id, ...doc.data() });
+    });
+
+    return users;
   });
 
-  return users;
-});
-
-// Function to update the highest drinks in 12 hours
-exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
+  // Function to update the highest drinks in 12 hours
+  exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -113,8 +113,8 @@ exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
     return null;
   });
 
-// Function to aggregate beverage data and reset the drink counts daily
-exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
+  // Function to aggregate beverage data and reset the drink counts daily
+  exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -245,13 +245,20 @@ exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run e
         totalSladeshes: newTotalSladeshes
       });
 
+      // Optionally, update the status of the Sladesh request to 'completed'
+      await snapshot.ref.update({
+        status: 'completed'  // Set status to 'completed' or 'pending'
+      });
+
       console.log(`Incremented sladesh count for user: ${recipientUsername} to ${newSladeshCount}`);
       console.log(`Incremented total sladeshes for user: ${recipientUsername} to ${newTotalSladeshes}`);
+      console.log(`Updated request status to 'completed' for requestId: ${context.params.requestId}`);
     } else {
       console.log(`No user found with username: ${recipientUsername}`);
     }
     return null;
   });
+
 
   // Function to increment check-in count on user check-in
   exports.incrementCheckInCount = functions.firestore

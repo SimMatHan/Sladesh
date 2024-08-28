@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import GlobalStyle from './globalStyles';
-import TopHeader from './components/TopHeader'; // Import the TopHeader component
+import TopHeader from './components/TopHeader'; 
 import Header from './components/Header';
 import Home from './components/Home';
 import RequestForm from './components/RequestForm';
@@ -28,7 +28,6 @@ const App = () => {
           const userData = userDoc.data();
           setUser({ uid: user.uid, displayName: userData.username });
 
-          // Set the drinks and sladeshCount from the user's document
           setDrinks(userData.drinks || {});
           setSladeshCount(userData.sladeshCount || 0);
         }
@@ -47,7 +46,7 @@ const App = () => {
         const data = doc.data();
         if (data) {
           setSladeshCount(data.sladeshCount || 0);
-          setDrinks(data.drinks || {}); // Update drinks in real-time
+          setDrinks(data.drinks || {}); 
         }
       });
 
@@ -79,8 +78,8 @@ const App = () => {
         checkedIn: false,
         lastSladesh: null,
         sladeshCount: 0,
-        drinks: {}, // Initialize drinks as an empty object
-        totalDrinks: 0 // Initialize total drinks as 0
+        drinks: {},
+        totalDrinks: 0 
       });
 
       localStorage.setItem('username', username);
@@ -102,7 +101,6 @@ const App = () => {
         localStorage.setItem('username', userData.username);
         setUser({ uid: user.uid, displayName: userData.username });
 
-        // Set the drinks and sladeshCount from the user's document
         setDrinks(userData.drinks || {});
         setSladeshCount(userData.sladeshCount || 0);
       }
@@ -113,14 +111,16 @@ const App = () => {
   };
 
   const handleViewedSladeshHub = () => {
-    setHasViewedHub(true); // Mark that the user has viewed the Sladesh Hub
-    setSladeshCount(0); // Reset the Sladesh count
+    setHasViewedHub(true);
+    setSladeshCount(0); 
   };
 
   const handleNewRequests = (count) => {
     if (count > 0) {
-      setHasViewedHub(false); // Mark that there are new requests
-      setSladeshCount(count); // Set the Sladesh count
+      setHasViewedHub(false); 
+      setSladeshCount(count); 
+    } else {
+      setSladeshCount(0); 
     }
   };
 
@@ -132,8 +132,8 @@ const App = () => {
     <>
       <GlobalStyle />
       <Router>
-        <TopHeader sladeshCount={!hasViewedHub ? sladeshCount : 0} /> {/* Add the TopHeader */}
-        <div style={{ paddingTop: '60px', paddingBottom: '60px' }}> {/* Adjust paddingTop to accommodate the top header */}
+        <TopHeader sladeshCount={!hasViewedHub ? sladeshCount : 0} />
+        <div style={{ paddingTop: '60px', paddingBottom: '60px' }}> 
           <Routes>
             <Route path="/" element={<Home user={user} drinks={drinks} setDrinks={setDrinks} onReset={handleReset} />} />
             <Route path="/requests" element={<RequestForm user={user} />} />
