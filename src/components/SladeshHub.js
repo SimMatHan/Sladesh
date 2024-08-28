@@ -10,15 +10,19 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    let isMounted = true; // track if the component is still mounted
-  
+    let isMounted = true;
+
     const fetchRequests = async () => {
       try {
         setLoading(true);
+        console.log(`Fetching requests for view: ${view}`);
         const fetchedRequests = await getRequests(user.displayName || user.uid, view);
-        if (isMounted) {  // Only update state if the component is still mounted
+        console.log('Fetched requests:', fetchedRequests);
+        if (isMounted) {
           setRequests(fetchedRequests);
-          onNewRequests(fetchedRequests.length);
+          if (fetchedRequests.length > 0) {
+            onNewRequests(fetchedRequests.length);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch requests:", error);
@@ -28,14 +32,14 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
         }
       }
     };
-  
+
     fetchRequests();
-    onViewed(); // Mark as viewed when the user enters the hub
-  
+    if (onViewed) onViewed(); // Ensure onViewed is only called once and does not trigger re-render
+
     return () => {
-      isMounted = false; // Clean up the effect
+      isMounted = false;
     };
-  }, [user, view]);  // Dependencies remain the same
+  }, [user, view]); // Removed onNewRequests and onViewed from dependencies to avoid unnecessary re-renders
 
   const handleToggleView = (selectedView) => {
     if (view !== selectedView) {
@@ -43,7 +47,7 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
       setTimeout(() => {
         setView(selectedView);
         setTransitioning(false);
-      }, 500); 
+      }, 500);
     }
   };
 
@@ -51,12 +55,11 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
     try {
       await updateRequestStatus(requestId, { status: 'confirmed', confirmedByRecipient: true });
       setSuccess('Sladesh confirmed!');
-      
-      // Automatically clear the success message after 3 seconds
+
       setTimeout(() => {
         setSuccess('');
       }, 3000);
-      
+
       const updatedRequests = await getRequests(user.displayName || user.uid, view);
       setRequests(updatedRequests);
     } catch (error) {
@@ -65,23 +68,32 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
   };
 
   const renderRequests = () => {
-    if (loading) return <div className="loading-indicator">Loading requests...</div>;
-  
-    if (requests.length === 0) return <p className="no-requests-message">No Sladesh available.</p>;
-  
+    if (loading) {
+      return <div className="loading-indicator">Loading requests...</div>;
+    }
+
+    if (requests.length === 0) {
+      return <p className="no-requests-message">No Sladesh available.</p>;
+    }
+
     return (
       <ul className={`${view === 'sent' ? 'sent-list' : 'request-list'}`}>
         {requests.map((request, index) => (
-          <li key={index} className={`request-item ${request.status === 'confirmed' && view === 'sent' ? 'completed' : ''}`}>
+          <li
+            key={request.id || index} // Prefer using a unique identifier like request.id
+            className={`request-item ${request.status === 'confirmed' && view === 'sent' ? 'completed' : ''}`}
+          >
             {view === 'received' ? (
               <>
                 <p>{request.message}</p>
                 {user.displayName === request.recipient && (
                   <>
                     {request.status === 'completed' && !request.confirmedByRecipient ? (
-                      <button onClick={() => confirmCompletion(request.id)} className="confirm-button">Confirm</button>
+                      <button onClick={() => confirmCompletion(request.id)} className="confirm-button">
+                        Confirm
+                      </button>
                     ) : (
-                      <button disabled className="completed-button">Completed</button> // Disabled button for confirmed requests
+                      <button disabled className="completed-button">Completed</button>
                     )}
                   </>
                 )}
@@ -102,10 +114,14 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
       </ul>
     );
   };
-  
+
   return (
     <div className="sladesh-hub-container">
       <div className="toggle-container">
+        <div
+          className="toggle-slider"
+          style={{ transform: view === 'received' ? 'translateX(0%)' : 'translateX(100%)' }}
+        ></div> {/* Sliding effect */}
         <button
           className={`toggle-button ${view === 'received' ? 'active' : ''}`}
           onClick={() => handleToggleView('received')}
@@ -120,8 +136,8 @@ const SladeshHub = ({ user, onViewed, onNewRequests }) => {
         </button>
       </div>
 
-      <div className={`request-list-container ${transitioning ? 'hidden' : 'visible'}`}>
-        <h2>{view === 'received' ? 'Any Sladesh for you?!' : 'Sladesh you have sent!'}</h2>
+      <div className={`request-list-container ${transitioning ? 'slide-out' : 'visible'}`}>
+        <h1>{view === 'received' ? 'Any Sladesh for you?!' : 'Sladesh you have sent!'}</h1>
         {renderRequests()}
       </div>
 

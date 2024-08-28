@@ -1,28 +1,9 @@
-:root {
-  --primary-color: #d3d2c1;
-  --secondary-color: #150e07;
-  --accent-color-1: #87643d;
-  --accent-color-2: #d4e653;
-  --background-color: #ffffff;
-  --header-bg-color: #f8f9fa;
-  --row-hover-bg-color: #f1f3f5;
-  --font-color: #343a40;
-  --font-size: 14px;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-}
-
 .scoreboard-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: var(--padding);
+  font-family: var(--font-family); /* Consistent font-family */
   background-color: var(--background-color);
   box-sizing: border-box;
   overflow-y: hidden;
@@ -34,9 +15,9 @@ html, body {
   width: 100%;
   max-width: 800px;
   border-collapse: collapse;
-  border-radius: 5px;
-  margin-top: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius); /* Use standardized border-radius */
+  margin-top: var(--margin);
+  box-shadow: var(--box-shadow); /* Use standardized box-shadow */
 }
 
 .scoreboard-table th, .scoreboard-table td {
@@ -69,11 +50,13 @@ html, body {
   color: var(--secondary-color);
   border: none;
   padding: 8px 15px;
-  font-size: 14px;
-  border-radius: 8px;
+  font-size: var(--font-size); /* Use standardized font-size */
+  border-radius: var(--border-radius); /* Use standardized border-radius */
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 5px 0;
+  width: 100%;
+  max-width: 300px;
 }
 
 .main-button:hover {
@@ -85,7 +68,7 @@ html, body {
 }
 
 .refresh-button {
-  margin-bottom: 20px;
+  margin-bottom: var(--margin);
 }
 
 /* Updated styles for the arrow */
@@ -103,7 +86,7 @@ html, body {
 .details-container {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  padding: var(--padding);
   font-size: var(--font-size);
   color: var(--font-color);
   flex-wrap: nowrap; /* Prevent wrapping */
@@ -120,17 +103,12 @@ html, body {
 @media (max-width: 600px) {
   .scoreboard-table th, .scoreboard-table td {
     padding: 8px;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .main-button {
-    font-size: 12px;
+    font-size: 14px;
     padding: 6px 10px;
-  }
-
-  .refresh-button {
-    margin-bottom: 10px;
-    width: 100px;
   }
 
   .scoreboard-table {

@@ -1,66 +1,65 @@
 .top-header-container {
-    background-color: var(--background-color);
-    padding: 15px 25px 10px 25px;
-    color: var(--secondary-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    box-sizing: border-box;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-  }
-  
-  .top-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-  
+  background-color: var(--background-color);
+  padding: 15px 25px 10px 25px;
+  color: var(--secondary-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-family); /* Use global font-family */
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.top-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--secondary-color);
+  font-family: inherit; /* Consistent with overall font family */
+}
+
+.user-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.nav-icon-container {
+  position: relative;
+}
+
+.notification-circle {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--error-color); /* Use global error color */
+  color: var(--background-color); /* Use global background color for contrast */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
   .logo-text {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--secondary-color);
-    font-family: inherit; /* Keep consistent with the overall font family */
+    font-size: 20px;
   }
-  
+
   .user-icon {
     width: 30px;
     height: 30px;
   }
-  
-  .nav-icon-container {
-    position: relative;
-  }
-  
-  .notification-circle {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 20px;
-    height: 20px;
-    background-color: red;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-  }
-  
-  /* Responsive styles */
-  @media (max-width: 600px) {
-    .logo-text {
-      font-size: 20px;
-    }
-  
-    .user-icon {
-      width: 30px;
-      height: 30px;
-    }
-  }
-  
+}

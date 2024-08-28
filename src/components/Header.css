@@ -1,11 +1,3 @@
-:root {
-  --primary-color: #d3d2c1;
-  --secondary-color: #150e07;
-  --accent-color-1: #87643d;
-  --accent-color-2: #d4e653;
-  --background-color: #ffffff;
-}
- 
 .header-container {
   background-color: var(--background-color);
   padding: 10px 10px 25px 10px;
@@ -14,7 +6,7 @@
   border-top: 1px solid #ddd;
   justify-content: center;
   align-items: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-family); /* Use global font-family */
   box-sizing: border-box;
   position: fixed;
   bottom: 0;
@@ -53,8 +45,8 @@
   right: -5px;
   width: 20px;
   height: 20px;
-  background-color: red;
-  color: white;
+  background-color: var(--error-color); /* Use global error color */
+  color: var(--background-color); /* Use global background color for contrast */
   border-radius: 50%;
   display: flex;
   align-items: center;

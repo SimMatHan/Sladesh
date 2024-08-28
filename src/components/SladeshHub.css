@@ -1,36 +1,17 @@
-:root {
-  --primary-color: #d3d2c1;
-  --secondary-color: #150e07;
-  --accent-color-1: #87643d;
-  --accent-color-2: #d4e653;
-  --background-color: #ffffff;
-  --success-color: #4CAF50; /* New success color */
-  --pending-color: #FF9800; /* Color for pending status */
-  --completed-color: #2196F3; /* Color for completed status */
-  --confirmed-color: #4CAF50; /* Color for confirmed status */
-  --button-hover-color: #FF5722; /* Hover color for confirmation button */
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-}
-
 /* General styles */
 .sladesh-hub-container {
+  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: var(--background-color);
+  font-family: var(--font-family); /* Use global font-family */
+  background-color: var(--background-color); /* Use global background color */
   height: calc(100vh - 75px);
   box-sizing: border-box;
   overflow: hidden;
   width: 100%;
-  padding-top: 20px;
+  padding-top: var(--padding);
 }
 
 .request-list-container {
@@ -40,42 +21,54 @@ html, body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  position: absolute;
+  margin-top: 100px;
 }
 
 .request-list-container.hidden {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateX(-100%);
 }
 
 .request-list-container.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
 }
 
+.request-list-container.slide-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* Toggle container styles */
 .toggle-container {
+  position: relative;
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--margin);
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   overflow: hidden;
-  width: 100%; 
-  max-width: 300px; 
+  width: 100%;
+  max-width: 300px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .toggle-button {
-  background-color: var(--primary-color);
+  background-color: transparent; /* Make buttons background transparent */
   border: none;
-  padding: 10px 20px;
+  padding: var(--padding);
   cursor: pointer;
-  font-size: 16px;
+  border-radius: 0px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--secondary-color);
-  border-right: 1px solid #ccc;
   flex: 1;
   text-align: center;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  z-index: 2; /* Ensure the text is above the slider */
+  transition: color 0.3s ease;
 }
 
 .toggle-button:last-child {
@@ -83,23 +76,35 @@ html, body {
 }
 
 .toggle-button.active {
-  background-color: var(--accent-color-2);
+  background-color: var(--primary-color);
   color: var(--secondary-color);
 }
 
+/* Slider for the active button */
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%; /* Adjust to cover one button at a time */
+  height: 100%;
+  background-color: var(--primary-color); /* Active background color */
+  transition: transform 0.2s ease; /* Smooth transition for sliding */
+  z-index: 1; /* Make sure it's behind the buttons but above the container */
+}
+
 .loading-indicator {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--primary-color);
 }
 
 .no-requests-message {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--secondary-color);
   text-align: center;
-  margin-top: 20px;
+  margin-top: var(--margin);
   background-color: var(--background-color);
-  border-radius: 10px;
-  padding: 15px;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
 }
 
 /* Received View Styles */
@@ -115,19 +120,19 @@ html, body {
 
 .request-item {
   background-color: var(--background-color);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   margin: 5px 0;
   text-align: center;
   font-size: 14px;
   color: var(--secondary-color);
   overflow: hidden;
-  max-width: 250px;
+  max-width: 275px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  padding: var(--padding);
 }
 
 .request-item img {
@@ -139,11 +144,10 @@ html, body {
 
 .request-item p {
   margin: 0 0 10px; 
-  padding: 8px;
+  padding: var(--padding);
   width: 100%;
   font-weight: 700;
-  background-color: var(--secondary-color);
-  color: var(--background-color);
+  color: var(--secondary-color);
   border-radius: 5px;
 }
 
@@ -165,7 +169,7 @@ html, body {
 }
 
 .confirmed-badge {
-  background-color: var(--confirmed-color);
+  background-color: var(--success-color);
   color: var(--background-color);
   padding: 5px 10px;
   border-radius: 5px;
@@ -174,7 +178,7 @@ html, body {
 
 /* Confirmation Button */
 .confirm-button {
-  background-color: var(--accent-color-1);
+  background-color: var(--primary-color);
   color: var(--background-color);
   padding: 8px 16px;
   border: none;
@@ -182,7 +186,8 @@ html, body {
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
-  margin-top: 10px;
+  margin-top: var(--margin);
+  width: 275px;
   transition: background-color 0.3s ease;
   width: 100%;
 }
@@ -195,24 +200,25 @@ html, body {
 .confirmation-message {
   font-size: 14px;
   color: var(--success-color);
-  margin-top: 10px;
+  margin-top: var(--margin);
 }
 
 .waiting-message {
   font-size: 14px;
   color: var(--primary-color);
-  margin-top: 10px;
+  margin-top: var(--margin);
 }
 
 .completed-button {
   background-color: #ccc; /* Light gray */
   color: #666; /* Darker gray for text */
+  width: 275px;
   border: none;
-  padding: 10px 20px;
+  padding: var(--padding);
   cursor: not-allowed; /* Show that the button is not clickable */
   font-size: 14px;
   font-weight: bold;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
 }
 
 .completed {
@@ -228,19 +234,20 @@ html, body {
   width: 100%;
   max-width: 300px;
   overflow-y: auto;
-  margin-top: 20px;
+  margin-top: var(--margin);
   list-style-type: none;
   padding: 0;
 }
 
 .sent-item {
   background-color: var(--background-color);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 10px 0;
-  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin: var(--margin) 0;
+  padding: var(--padding);
   text-align: center;
   width: 100px;
+  max-width: 275px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -250,7 +257,7 @@ html, body {
 
 .sent-item p {
   margin: 0;
-  padding: 8px;
+  padding: var(--padding);
   font-size: 16px;
   font-weight: bold;
   color: var(--secondary-color);
@@ -266,9 +273,9 @@ html, body {
   color: var(--success-color);
   font-size: 16px;
   font-weight: bold;
-  margin-top: 20px;
+  margin-top: var(--margin);
   background-color: var(--background-color);
   border: 2px solid var(--success-color);
-  border-radius: 10px;
-  padding: 10px 15px;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
 }

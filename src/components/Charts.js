@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore'; // Removed getDocs
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { Pie } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
 } from 'chart.js';
-import './Charts.css'; // Import the CSS file
+import './Charts.css';
 
-// Register the components with Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Charts = () => {
@@ -21,7 +20,6 @@ const Charts = () => {
   const [selectedMonth, setSelectedMonth] = useState('overall');
   const [availableMonths, setAvailableMonths] = useState([]);
 
-  // Mapping for month numbers to names
   const monthNames = {
     '01': 'January',
     '02': 'February',
@@ -37,23 +35,18 @@ const Charts = () => {
     '12': 'December',
   };
 
-  // Convert 'YYYY-MM' to 'MonthName YYYY'
   const formatMonthYear = (monthYear) => {
     if (monthYear === 'overall') return 'Overall';
     const [year, month] = monthYear.split('-');
     return `${monthNames[month]} ${year}`;
   };
 
-  // Fetch available months for dropdown
   const fetchAvailableMonths = async () => {
     try {
       const monthsSnapshot = await getDoc(doc(db, 'statistics', 'totalDrinks'));
       const monthsList = Object.keys(monthsSnapshot.data() || {});
 
-      // Ensure "Overall" is always included and at the top
       const uniqueMonthsList = Array.from(new Set(['overall', ...monthsList]));
-      
-      // Sort months to have "Overall" first and the rest in chronological order
       uniqueMonthsList.sort((a, b) => (a === 'overall' ? -1 : b === 'overall' ? 1 : a.localeCompare(b)));
 
       setAvailableMonths(uniqueMonthsList);
@@ -72,7 +65,7 @@ const Charts = () => {
         if (topUsersData) {
           setTopUsers([topUsersData.topOne, topUsersData.topTwo, topUsersData.topThree]);
         } else {
-          setTopUsers([]); // Clear the data if no record is found
+          setTopUsers([]);
         }
       } else {
         console.log("No top users data for the selected period!");
@@ -125,9 +118,9 @@ const Charts = () => {
   };
 
   useEffect(() => {
-    fetchAvailableMonths(); // Fetch available months
-    fetchTopUsers(selectedMonth); // Fetch top users based on selected month
-    fetchDrinkData(selectedMonth); // Fetch drink data based on selected month
+    fetchAvailableMonths();
+    fetchTopUsers(selectedMonth);
+    fetchDrinkData(selectedMonth);
   }, [selectedMonth]);
 
   const data = {
@@ -147,14 +140,60 @@ const Charts = () => {
           '#d4e653', 
           '#c0c0c0'
         ],
+        borderWidth: 5,
       },
     ],
+  };
+
+  const options = {
+    cutout: '70%', // This makes it a donut chart
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed !== null) {
+              label += `${context.parsed} drinks`;
+            }
+            return label;
+          }
+        }
+      },
+      legend: {
+        display: false, // Disable the legend
+      },
+      beforeDraw: (chart) => {
+        const { ctx, chartArea: { width, height } } = chart;
+        ctx.save();
+
+        const totalDrinks = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+        const data = chart.data.datasets[0].data;
+        const maxIndex = data.indexOf(Math.max(...data));
+        const percentage = `${Math.round((data[maxIndex] / totalDrinks) * 100)}%`;
+        const label = chart.data.labels[maxIndex];
+
+        // Draw the number of drinks
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = '#000';
+        ctx.fillText(`${data[maxIndex]} ${label}`, width / 2, height / 2 - 10);
+
+        // Draw the percentage
+        ctx.font = '16px sans-serif';
+        ctx.fillText(percentage, width / 2, height / 2 + 10);
+
+        ctx.restore();
+      },
+    },
   };
 
   return (
     <div className="charts-container">
       <div className="filter-container">
-        <label htmlFor="month-select">Filter by Month:</label>
         <select id="month-select" onChange={(e) => setSelectedMonth(e.target.value)}>
           {availableMonths.map(month => (
             <option key={month} value={month}>{formatMonthYear(month)}</option>
@@ -162,7 +201,10 @@ const Charts = () => {
         </select>
       </div>
 
-      <h1 className="charts-heading">Top 3 Drinkers</h1>
+      <h1 className="charts-heading">
+        Top 3 Drinkers {selectedMonth === 'overall' ? 'Overall' : `in ${formatMonthYear(selectedMonth)}`}
+      </h1>
+
       <div className="podium">
         <div className="podium-block second">
           {topUsers[1] && (
@@ -189,21 +231,22 @@ const Charts = () => {
           )}
         </div>
       </div>
+
       <div className="pie-chart-container">
         <h2 className="pie-chart-heading">Beverage Breakdown</h2>
-        <Pie data={data} />
+        <Doughnut data={data} options={options} />
       </div>
 
       <div className="statistics-cards">
         <div className="statistics-card">
           <h3>Most Sladeshed User</h3>
           <p>{mostSladeshedUser.username || 'Loading...'}</p>
-          <p>{`${mostSladeshedUser.totalSladeshes || ''}`}</p> {/* Display total sladeshes */}
+          <p>{`${mostSladeshedUser.totalSladeshes || ''}`}</p>
         </div>
         <div className="statistics-card">
           <h3>Most Checked-In User</h3>
           <p>{mostCheckedInUser.username || 'Loading...'}</p>
-          <p>{`${mostCheckedInUser.totalCheckIns || ''}`}</p> {/* Display total check-ins */}
+          <p>{`${mostCheckedInUser.totalCheckIns || ''}`}</p>
         </div>
       </div>
     </div>

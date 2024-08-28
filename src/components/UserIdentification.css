@@ -74,8 +74,10 @@
 
 .button-container {
   display: flex;
-  flex-direction: column;
-  gap: 10px; /* Space between buttons */
+  justify-content: space-between;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
 }
 
 .button {

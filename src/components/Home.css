@@ -1,24 +1,9 @@
-:root {
-  --primary-color: #d3d2c1;
-  --secondary-color: #150e07;
-  --accent-color-1: #87643d;
-  --accent-color-2: #d4e653;
-  --background-color: #ffffff;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-}
-
 .home-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-family); /* Ensures consistency with global font */
   background-color: var(--background-color);
   height: calc(100vh - 130px);
   box-sizing: border-box;
@@ -38,7 +23,7 @@ html, body {
   border: none;
   padding: 8px 15px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 5px 0;
@@ -59,7 +44,7 @@ html, body {
   font-size: 14px;
   margin: 10px 0;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   width: 100%;
   max-width: 300px;
   box-sizing: border-box;
@@ -67,10 +52,8 @@ html, body {
 
 .button-container {
   display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 300px;
-  box-sizing: border-box;
+  flex-direction: column;
+  gap: 10px; /* Space between buttons */
 }
 
 .drink-list {
@@ -90,7 +73,7 @@ html, body {
   font-size: 14px;
   margin: 10px 0;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   width: 100%;
   max-width: 300px;
   box-sizing: border-box;
@@ -101,7 +84,7 @@ html, body {
 .drink-item {
   background-color: var(--background-color);
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   margin: 10px 0;
   padding: 20px;
   text-align: center;
@@ -145,7 +128,7 @@ html, body {
   border: none;
   padding: 5px 10px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 0 5px;
@@ -165,19 +148,13 @@ html, body {
   max-width: 350px;
   box-sizing: border-box;
   background-color: var(--background-color);
-  padding: 10px 20px 10px 20px;
+  padding: 10px 20px;
   border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 .intro-container-minimized {
   padding: 10px;
-}
-
-.intro-heading {
-  font-size: 24px;
-  color: var(--secondary-color);
-  margin-bottom: 10px;
 }
 
 .intro-text {
@@ -201,7 +178,7 @@ html, body {
 .popup {
   background-color: var(--background-color);
   padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   z-index: 1000;
   border-radius: 10px;
   width: 90%;
@@ -225,7 +202,7 @@ html, body {
   border: none;
   padding: 10px 20px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   margin: 10px;
   transition: background-color 0.3s ease;

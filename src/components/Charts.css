@@ -1,21 +1,4 @@
-:root {
-  --primary-color: #d3d2c1;
-  --secondary-color: #150e07;
-  --accent-color-1: #87643d;
-  --accent-color-2: #d4e653;
-  --background-color: #ffffff;
-  --font-color: #343a40;
-  --first-place-color: #ffd700;
-  --second-place-color: #c0c0c0;
-  --third-place-color: #cd7f32;
-  --font-size: 14px;
-}
-
 html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
   overflow-x: hidden; /* Prevent side scrolling */
 }
 
@@ -24,8 +7,8 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center; /* Center all elements vertically */
-  padding: 10px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: var(--padding);
+  font-family: var(--font-family); /* Use global font-family */
   background-color: var(--background-color);
   height: calc(100vh - 130px);
   box-sizing: border-box;
@@ -33,25 +16,28 @@ html, body {
   max-width: 100%; /* Prevent exceeding the screen width */
 }
 
-/* New filter container styling */
+/* Updated filter container styling */
 .filter-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: var(--font-size); /* Use global font size */
   width: 100%;
-  max-width: 350px;
-  margin-bottom: 20px;
-  font-size: var(--font-size);
-  color: var(--font-color);
+  max-width: 300px;
+  box-sizing: border-box;
+  background-color: var(--background-color); /* Use global background color */
+  color: var(--font-color); /* Use global font color */
 }
 
 #month-select {
-  padding: 5px;
-  font-size: var(--font-size);
-  border: 1px solid var(--secondary-color);
-  border-radius: 4px;
-  background-color: var(--primary-color);
+  padding: 10px; /* Match the padding with .drink-select */
+  font-size: 14px;
+  margin: 10px 0;
+  border: 1px solid #ddd; /* Use global secondary color */
+  border-radius: var(--border-radius);
   color: var(--font-color);
+  width: 100%; /* Ensures the select takes up full width in the container */
+  box-sizing: border-box;
 }
 
 .charts-heading {
@@ -80,7 +66,7 @@ html, body {
   text-align: center;
   padding: 3px; /* Reduce the padding inside each block */
   margin: 0 10px; /* Reduce the margin between podium blocks */
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   color: var(--font-color);
   position: relative;
 }
@@ -121,18 +107,18 @@ html, body {
   align-items: center;
   width: 100%;
   max-width: 225px; /* Reduce the size of the pie chart container */
-  margin: 20px 0; /* Adjust margin as needed */
-  padding: 10px; /* Add padding for some breathing room */
-  box-sizing: border-box; /* Ensure padding and border are included in the element's width and height */
+  margin: var(--margin) 0;
+  padding: var(--padding);
+  box-sizing: border-box;
 }
 
 .pie-chart-container canvas {
   max-width: 100%;
-  height: auto;
+  height: 250px;
 }
 
 .pie-chart-heading {
-  font-size: 16px; /* Reduce the font size */
+  font-size: 16px;
   color: var(--secondary-color);
   margin-bottom: 10px;
   text-align: center;
@@ -152,12 +138,12 @@ html, body {
 .statistics-card {
   font-size: 10px;
   background-color: #f8f9fa;
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   padding: 8px; /* Reduce padding inside the cards */
   text-align: center;
   width: 30%; /* Make the cards smaller */
   max-width: 120px; /* Adjust max width */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   flex-grow: 1;
 }
 

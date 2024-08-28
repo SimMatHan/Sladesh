@@ -1,25 +1,10 @@
-:root {
-  --primary-color: #d3d2c1;
-  --secondary-color: #150e07;
-  --accent-color-1: #87643d;
-  --accent-color-2: #d4e653;
-  --background-color: #ffffff;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-}
-
 .request-form-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   padding: 10px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-family);
   background-color: var(--background-color);
   height: calc(100vh - 130px);
   box-sizing: border-box;
@@ -32,20 +17,9 @@ html, body {
   max-width: 350px;
   box-sizing: border-box;
   background-color: var(--background-color);
-  padding: 10px 20px 10px 20px;
+  padding: 10px 20px;
   border-radius: 10px;
   transition: all 0.3s ease;
-}
-
-.intro-heading {
-  font-size: 24px;
-  color: var(--secondary-color);
-  margin-bottom: 10px;
-}
-
-.intro-text {
-  font-size: 16px;
-  color: var(--secondary-color);
 }
 
 .request-form {
@@ -117,7 +91,7 @@ html, body {
   border: none;
   padding: 8px 15px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 5px 0;
@@ -150,13 +124,25 @@ html, body {
   background-color: #a0a0a0;
 }
 
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between buttons */
+}
+
 .error-message {
-  color: red;
+  font-size: 14px;
+  padding: 25px;
+  color: var(--error-color);
+  text-align: center;
   margin-top: 10px;
 }
 
 .success-message {
-  color: green;
+  font-size: 14px;
+  padding: 25px;
+  color: var(--success-color);
+  text-align: center;
   margin-top: 10px;
 }
 
@@ -165,12 +151,6 @@ html, body {
   color: var(--secondary-color);
   text-align: center;
   margin-top: 10px;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin: 20px 0;
 }
 
 /* Style for the popup */
@@ -184,7 +164,7 @@ html, body {
   padding: 20px;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   z-index: 1001;
   text-align: center;
 }
@@ -231,12 +211,4 @@ html, body {
   100% {
     opacity: 0;
   }
-}
-
-.form-button {
-  height: 40px;
-  margin-top: auto;
-  width: 100%;
-  max-width: 300px;
-  margin-bottom: 15px; 
 }
