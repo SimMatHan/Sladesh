@@ -114,70 +114,86 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs tw
   });
 
   // Function to aggregate beverage data and reset the drink counts daily
-  exports.aggregateBeverageData = functions.pubsub.schedule('0 11 * * *') // Run every day at 11:00 AM
+// Function to aggregate beverage data and reset the drink counts daily
+exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run every day at 11:00 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
-    const usersSnapshot = await db.collection('users').get();
+    try {
+      const usersSnapshot = await db.collection('users').get();
 
-    let totalBeer = 0;
-    let totalWine = 0;
-    let totalShots = 0;
-    let totalDrinks = 0;
+      let totalBeer = 0;
+      let totalWine = 0;
+      let totalShots = 0;
+      let totalDrinks = 0;
 
-    usersSnapshot.forEach(doc => {
-      const data = doc.data();
+      // Calculate the totals
+      usersSnapshot.forEach(doc => {
+        const data = doc.data();
 
-      totalBeer += data.drinks?.beer || 0;
-      totalWine += data.drinks?.wine || 0;
-      totalShots += data.drinks?.shots || 0;
-      totalDrinks += data.drinks?.drink || 0;
-    });
-
-    const now = new Date();
-    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-    // Save monthly data
-    const monthRef = db.collection('statistics').doc(`totalDrinks/${monthYear}`);
-    await monthRef.set({
-      beer: totalBeer,
-      wine: totalWine,
-      shots: totalShots,
-      drinks: totalDrinks,
-    });
-
-    // Update the overall totals
-    const statsRef = db.collection('statistics').doc('totalDrinks');
-    const statsDoc = await statsRef.get();
-
-    if (statsDoc.exists) {
-      const statsData = statsDoc.data();
-      totalBeer += statsData.beer || 0;
-      totalWine += statsData.wine || 0;
-      totalShots += statsData.shots || 0;
-      totalDrinks += statsData.drinks || 0;
-    }
-
-    await statsRef.set({
-      beer: totalBeer,
-      wine: totalWine,
-      shots: totalShots,
-      drinks: totalDrinks,
-    });
-
-    // Reset each user's drinks and totalDrinks
-    const batch = db.batch();
-    usersSnapshot.forEach(doc => {
-      batch.update(doc.ref, {
-        drinks: { beer: 0, wine: 0, shots: 0, drink: 0 },
-        totalDrinks: 0
+        totalBeer += data.drinks?.beer || 0;
+        totalWine += data.drinks?.wine || 0;
+        totalShots += data.drinks?.shots || 0;
+        totalDrinks += data.drinks?.drink || 0;
       });
-    });
 
-    await batch.commit();
+      const now = new Date();
+      const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      console.log(`Aggregating data for: ${monthYear}`);
 
-    console.log('Aggregated beverage data and updated statistics/totalDrinks.');
-    return null;
+      // Save monthly data
+      const monthRef = db.collection('statistics').doc(`totalDrinks`).collection(monthYear).doc('data');
+      await monthRef.set({
+        beer: totalBeer,
+        wine: totalWine,
+        shots: totalShots,
+        drinks: totalDrinks,
+      }, { merge: true });
+      console.log(`Updated monthly totals for ${monthYear}`);
+
+      // Update the overall totals
+      const statsRef = db.doc('statistics/totalDrinks/overall');
+      const statsDoc = await statsRef.get();
+
+      let overallBeer = totalBeer;
+      let overallWine = totalWine;
+      let overallShots = totalShots;
+      let overallDrinks = totalDrinks;
+
+      if (statsDoc.exists) {
+        const statsData = statsDoc.data();
+        overallBeer += statsData.beer || 0;
+        overallWine += statsData.wine || 0;
+        overallShots += statsData.shots || 0;
+        overallDrinks += statsData.drinks || 0;
+      }
+
+      await statsRef.set({
+        beer: overallBeer,
+        wine: overallWine,
+        shots: overallShots,
+        drinks: overallDrinks,
+      }, { merge: true });
+      console.log('Updated overall totals');
+
+      // Reset each user's drinks and totalDrinks
+      const batch = db.batch();
+      usersSnapshot.forEach(doc => {
+        batch.update(doc.ref, {
+          drinks: { beer: 0, wine: 0, shots: 0, drink: 0 },
+          totalDrinks: 0
+        });
+      });
+
+      await batch.commit();
+      console.log('Reset all users\' drink counts to zero.');
+
+      return null;
+    } catch (error) {
+      console.error('Error in aggregateBeverageData function:', error);
+      return null;
+    }
   });
+
 
 
 
