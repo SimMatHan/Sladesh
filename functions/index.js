@@ -2,7 +2,9 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 
+// Initialize Firebase Admin SDK
 admin.initializeApp();
+
 const db = getFirestore();
 
 // Function to reset Sladesh count daily
@@ -42,11 +44,15 @@ exports.resetCheckInStatus = functions.pubsub.schedule('0 0 * * *') // Every day
 exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs twice a day at midnight and noon
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
-    const twelveHoursAgo = admin.firestore.Timestamp.fromDate(
-      new Date(Date.now() - 12 * 60 * 60 * 1000)
-    );
-
     try {
+      const twelveHoursAgo = admin.firestore.Timestamp.fromDate(
+        new Date(Date.now() - 12 * 60 * 60 * 1000)
+      );
+      
+      console.log('Current time:', new Date().toISOString());
+      console.log('Twelve hours ago:', twelveHoursAgo.toDate().toISOString());
+
+      // Fetch documents older than 12 hours
       const snapshot = await db.collection('requests')
         .where('createdAt', '<', twelveHoursAgo)
         .get();
@@ -60,7 +66,7 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs tw
 
       const batch = db.batch();
       snapshot.docs.forEach(doc => {
-        console.log(`Deleting request with ID: ${doc.id}, created at: ${doc.data().createdAt.toDate()}`);
+        console.log(`Deleting request with ID: ${doc.id}, created at: ${doc.data().createdAt.toDate().toISOString()}`);
         batch.delete(doc.ref);
       });
 
@@ -69,25 +75,28 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs tw
       return null;
     } catch (error) {
       console.error('Error deleting old requests:', error);
+      if (error.message.includes("no matching index found")) {
+        console.error("Firestore may require a composite index for this query. Check the Firestore console for suggested indexes.");
+      }
       return null;
     }
   });
 
-  // Function to list all users (for your listUsers function)
-  exports.listUsers = functions.https.onCall(async (data, context) => {
-    const usersRef = db.collection('users');
-    const querySnapshot = await usersRef.get();
+// Function to list all users (for your listUsers function)
+exports.listUsers = functions.https.onCall(async (data, context) => {
+  const usersRef = db.collection('users');
+  const querySnapshot = await usersRef.get();
 
-    const users = [];
-    querySnapshot.forEach(doc => {
-      users.push({ id: doc.id, ...doc.data() });
-    });
-
-    return users;
+  const users = [];
+  querySnapshot.forEach(doc => {
+    users.push({ id: doc.id, ...doc.data() });
   });
 
-  // Function to update the highest drinks in 12 hours
-  exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
+  return users;
+});
+
+// Function to update the highest drinks in 12 hours
+exports.updateHighestDrinksIn12Hours = functions.pubsub.schedule('0 0,12 * * *')
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -113,9 +122,8 @@ exports.deleteOldRequests = functions.pubsub.schedule('0 0,12 * * *') // Runs tw
     return null;
   });
 
-  // Function to aggregate beverage data and reset the drink counts daily
 // Function to aggregate beverage data and reset the drink counts daily
-exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run every day at 11:00 AM
+exports.aggregateBeverageData = functions.pubsub.schedule('00 11 * * *') // Run every day at 09:45 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     try {
@@ -140,20 +148,30 @@ exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run e
       const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       console.log(`Aggregating data for: ${monthYear}`);
 
-      // Save monthly data
-      const monthRef = db.collection('statistics').doc(`totalDrinks`).collection(monthYear).doc('data');
-      await monthRef.set({
-        beer: totalBeer,
-        wine: totalWine,
-        shots: totalShots,
-        drinks: totalDrinks,
-      }, { merge: true });
+      // Save monthly data as a map inside totalDrinks
+      const statsRef = db.doc('statistics/totalDrinks');
+      const statsDoc = await statsRef.get();
+
+      let totalDrinksData = {
+        [monthYear]: {
+          beer: totalBeer,
+          wine: totalWine,
+          shots: totalShots,
+          drinks: totalDrinks,
+        }
+      };
+
+      if (statsDoc.exists) {
+        const statsData = statsDoc.data();
+        totalDrinksData = {
+          ...statsData,
+          ...totalDrinksData
+        };
+      }
+      await statsRef.set(totalDrinksData, { merge: true });
       console.log(`Updated monthly totals for ${monthYear}`);
 
       // Update the overall totals
-      const statsRef = db.doc('statistics/totalDrinks/overall');
-      const statsDoc = await statsRef.get();
-
       let overallBeer = totalBeer;
       let overallWine = totalWine;
       let overallShots = totalShots;
@@ -161,17 +179,19 @@ exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run e
 
       if (statsDoc.exists) {
         const statsData = statsDoc.data();
-        overallBeer += statsData.beer || 0;
-        overallWine += statsData.wine || 0;
-        overallShots += statsData.shots || 0;
-        overallDrinks += statsData.drinks || 0;
+        overallBeer += statsData.overall?.beer || 0;
+        overallWine += statsData.overall?.wine || 0;
+        overallShots += statsData.overall?.shots || 0;
+        overallDrinks += statsData.overall?.drinks || 0;
       }
 
       await statsRef.set({
-        beer: overallBeer,
-        wine: overallWine,
-        shots: overallShots,
-        drinks: overallDrinks,
+        overall: {
+          beer: overallBeer,
+          wine: overallWine,
+          shots: overallShots,
+          drinks: overallDrinks,
+        }
       }, { merge: true });
       console.log('Updated overall totals');
 
@@ -191,53 +211,61 @@ exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run e
     } catch (error) {
       console.error('Error in aggregateBeverageData function:', error);
       return null;
-    }
+  }
   });
 
-
-
-
-  // Function to update the most sladeshed user daily
-  exports.updateMostSladeshedUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+// Function to update the most sladeshed user daily
+exports.updateMostSladeshedUser = functions.pubsub.schedule('0 1 * * *') // Runs every day at 11:15 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
-    let mostSladeshedUser = { username: '', totalSladeshes: 0 };
+    let mostSladeshedUserThisMonth = { username: '', totalSladeshes: 0 };
+    let overallMostSladeshedUser = { username: '', totalSladeshes: 0 };
+
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     usersSnapshot.forEach(doc => {
       const data = doc.data();
 
-      if (data.totalSladeshes > mostSladeshedUser.totalSladeshes) {
-        mostSladeshedUser = {
+      // Calculate sladeshes for the current month by considering sladeshes that occurred only this month
+      if (data.totalSladeshes > mostSladeshedUserThisMonth.totalSladeshes && new Date(data.lastSladesh).getMonth() + 1 === now.getMonth() + 1) {
+        mostSladeshedUserThisMonth = {
+          username: data.username,
+          totalSladeshes: data.totalSladeshes - data.sladeshesAtStartOfMonth,
+        };
+      }
+
+      // Update the overall most sladeshed user if necessary
+      if (data.totalSladeshes > overallMostSladeshedUser.totalSladeshes) {
+        overallMostSladeshedUser = {
           username: data.username,
           totalSladeshes: data.totalSladeshes,
         };
       }
     });
 
-    const now = new Date();
-    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
     // Store the most sladeshed user for the current month
     const mostSladeshedUserRef = db.collection('statistics').doc('mostSladeshedUser');
     await mostSladeshedUserRef.set({
-      [monthYear]: mostSladeshedUser
+      [monthYear]: mostSladeshedUserThisMonth
     }, { merge: true });
 
-    // Optionally, update the overall stats
+    // Update the overall stats with the correct user
     await mostSladeshedUserRef.set({
-      overall: mostSladeshedUser
+      overall: overallMostSladeshedUser
     }, { merge: true });
 
     console.log('Updated most sladeshed user for the month:', monthYear);
+    console.log('Updated overall most sladeshed user:', overallMostSladeshedUser);
     return null;
   });
 
 
 
-  // Function to increment sladesh count on sladesh creation and update total sladeshes
-  exports.incrementSladeshCount = functions.firestore
+// Function to increment sladesh count on sladesh creation and update total sladeshes
+exports.incrementSladeshCount = functions.firestore
   .document('requests/{requestId}')
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data();
@@ -275,9 +303,8 @@ exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run e
     return null;
   });
 
-
-  // Function to increment check-in count on user check-in
-  exports.incrementCheckInCount = functions.firestore
+// Function to increment check-in count on user check-in
+exports.incrementCheckInCount = functions.firestore
   .document('users/{userId}')
   .onUpdate(async (change, context) => {
     const before = change.before.data();
@@ -293,96 +320,139 @@ exports.aggregateBeverageData = functions.pubsub.schedule('25 9 * * *') // Run e
     return null;
   });
 
-  // Function to update the most checked-in user daily
-  exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+// Function to update the most checked-in user daily
+exports.updateMostCheckedInUser = functions.pubsub.schedule('0 1 * * *') // Runs every day at 11:15 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
-    let mostCheckedInUser = { username: '', totalCheckIns: 0 };
+    let mostCheckedInUserThisMonth = { username: '', totalCheckIns: 0 };
+    let overallMostCheckedInUser = { username: '', totalCheckIns: 0 };
+
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     usersSnapshot.forEach(doc => {
       const data = doc.data();
 
-      if (data.checkInCount > mostCheckedInUser.totalCheckIns) {
-        mostCheckedInUser = {
+      // Calculate check-ins for the current month by considering check-ins that occurred only this month
+      if (data.checkInCount > mostCheckedInUserThisMonth.totalCheckIns && new Date(data.lastCheckIn).getMonth() + 1 === now.getMonth() + 1) {
+        mostCheckedInUserThisMonth = {
+          username: data.username,
+          totalCheckIns: data.checkInCount - data.checkInsAtStartOfMonth,
+        };
+      }
+
+      // Update the overall most checked-in user if necessary
+      if (data.checkInCount > overallMostCheckedInUser.totalCheckIns) {
+        overallMostCheckedInUser = {
           username: data.username,
           totalCheckIns: data.checkInCount,
         };
       }
     });
 
-    const now = new Date();
-    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
     // Store the most checked-in user for the current month
     const mostCheckedInUserRef = db.collection('statistics').doc('mostCheckedInUser');
     await mostCheckedInUserRef.set({
-      [monthYear]: mostCheckedInUser
+      [monthYear]: mostCheckedInUserThisMonth
     }, { merge: true });
 
-    // Optionally, update the overall stats
+    // Update the overall stats with the correct user
     await mostCheckedInUserRef.set({
-      overall: mostCheckedInUser
+      overall: overallMostCheckedInUser
     }, { merge: true });
 
     console.log('Updated most checked-in user for the month:', monthYear);
+    console.log('Updated overall most checked-in user:', overallMostCheckedInUser);
     return null;
   });
 
-
-  exports.updateTopUsers = functions.pubsub.schedule('0 0 * * *') // Runs every day at midnight
+// Function to update the top users daily
+exports.updateTopUsers = functions.pubsub.schedule('30 0 * * *') // Runs every midnight
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
 
     const usersList = [];
+    const overallList = [];
+
+    const now = new Date();
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Get all historical top users from the database
+    const topUsersRef = db.collection('statistics').doc('topUsers');
+    const topUsersDoc = await topUsersRef.get();
+    if (topUsersDoc.exists) {
+      const historicalData = topUsersDoc.data();
+
+      // Push all historical top users into the overallList
+      for (const month in historicalData) {
+        if (month !== 'overall') { // Skip the overall field
+          const monthData = historicalData[month];
+          if (monthData.topOne) {
+            overallList.push(monthData.topOne);
+          }
+          if (monthData.topTwo) {
+            overallList.push(monthData.topTwo);
+          }
+          if (monthData.topThree) {
+            overallList.push(monthData.topThree);
+          }
+        }
+      }
+    }
 
     usersSnapshot.forEach(doc => {
       const data = doc.data();
 
-      if (data.highestDrinksIn12Hours) {
+      if (data.highestDrinksIn12Hours !== null && data.highestDrinksIn12Hours !== undefined) {
         usersList.push({
+          username: data.username,
+          highestDrinksIn12Hours: data.highestDrinksIn12Hours,
+        });
+
+        // Add current user's highestDrinksIn12Hours to the overall list for comparison
+        overallList.push({
           username: data.username,
           highestDrinksIn12Hours: data.highestDrinksIn12Hours,
         });
       }
     });
 
-    // Sort users by highestDrinksIn12Hours in descending order
+    // Sort users by highestDrinksIn12Hours in descending order for the current month
     usersList.sort((a, b) => b.highestDrinksIn12Hours - a.highestDrinksIn12Hours);
 
-    // Get the top 3 users
+    // Get the top 3 users for the current month
     const topThree = usersList.slice(0, 3);
-
-    // Separate top users
     const topOne = topThree[0] || {};
     const topTwo = topThree[1] || {};
     const topThreeUser = topThree[2] || {};
 
-    const now = new Date();
-    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    // Sort the overall list by highestDrinksIn12Hours in descending order
+    overallList.sort((a, b) => b.highestDrinksIn12Hours - a.highestDrinksIn12Hours);
 
-    // Store the top users for the current month
-    const topUsersRef = db.collection('statistics').doc('topUsers');
+    // Get the top 3 users for overall
+    const overallTopThree = overallList.slice(0, 3);
+    const overallTopOne = overallTopThree[0] || {};
+    const overallTopTwo = overallTopThree[1] || {};
+    const overallTopThreeUser = overallTopThree[2] || {};
+
+    // Store the top users for the current month and update the overall stats with the highest of all time
     await topUsersRef.set({
       [monthYear]: {
         topOne: topOne,
         topTwo: topTwo,
         topThree: topThreeUser
-      }
-    }, { merge: true });
-
-    // Optionally, update the overall stats
-    await topUsersRef.set({
+      },
       overall: {
-        topOne: topOne,
-        topTwo: topTwo,
-        topThree: topThreeUser
+        topOne: overallTopOne,
+        topTwo: overallTopTwo,
+        topThree: overallTopThreeUser
       }
     }, { merge: true });
 
     console.log('Updated top users for the month:', monthYear, topThree);
+    console.log('Updated overall top users:', overallTopThree);
     return null;
   });
-
