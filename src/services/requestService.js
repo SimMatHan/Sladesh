@@ -6,11 +6,18 @@ const functions = getFunctions();
 const requestsCollection = collection(db, "requests");
 const usersCollection = collection(db, "users");
 
+// Updated createRequest function to return the Firestore document reference
 export const createRequest = async (request) => {
-  await addDoc(requestsCollection, {
-    ...request,
-    createdAt: serverTimestamp() // Use server timestamp for consistency
-  });
+  try {
+    const docRef = await addDoc(requestsCollection, {
+      ...request,
+      createdAt: serverTimestamp() // Use server timestamp for consistency
+    });
+    return docRef;  // Return the document reference for accessing requestId
+  } catch (error) {
+    console.error('Error creating request:', error);
+    throw new Error('Failed to create request');
+  }
 };
 
 export const getRequests = async (username, type = 'received') => {
@@ -41,10 +48,15 @@ export const getRequests = async (username, type = 'received') => {
 };
 
 export const getUsers = async () => {
-  const listUsers = httpsCallable(functions, 'listUsers');
-  const response = await listUsers();
-  const checkedInUsers = response.data.filter(user => user.checkedIn);
-  return checkedInUsers;
+  try {
+    const listUsers = httpsCallable(functions, 'listUsers');
+    const response = await listUsers();
+    const checkedInUsers = response.data.filter(user => user.checkedIn);
+    return checkedInUsers;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw new Error('Failed to fetch users');
+  }
 };
 
 export const createUser = async (user) => {
@@ -55,7 +67,12 @@ export const createUser = async (user) => {
     throw new Error("Username is already taken");
   }
 
-  await addDoc(usersCollection, user);
+  try {
+    await addDoc(usersCollection, user);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw new Error('Failed to create user');
+  }
 };
 
 export const updateRequestStatus = async (requestId, updates) => {
@@ -64,14 +81,20 @@ export const updateRequestStatus = async (requestId, updates) => {
       throw new Error('Invalid requestId');
     }
 
-    console.log('Updating request with ID:', requestId, 'with updates:', updates);
+    // Filter out any undefined fields from the updates object
+    const validUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([key, value]) => value !== undefined)
+    );
+
+    console.log('Updating request with ID:', requestId, 'with updates:', validUpdates);
 
     const requestRef = doc(db, 'requests', requestId);
+    await updateDoc(requestRef, validUpdates);
 
-    await updateDoc(requestRef, updates);
-    console.log('Request status updated successfully:', updates);
+    console.log('Request status updated successfully:', validUpdates);
   } catch (error) {
     console.error('Error updating request status:', error);
     throw error;
   }
 };
+

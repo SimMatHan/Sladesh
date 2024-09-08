@@ -5,6 +5,7 @@ import { db } from '../firebaseConfig';
 import './RequestForm.css'; 
 import LoadingRipples from '../assets/ripples.svg'; 
 import ConfirmationIcon from '../assets/Confirmation.svg'; 
+import sladeshSound from '../assets/sounds/sladesh.mp3';  // Import the sound from src/assets
 
 const RequestForm = ({ user }) => {
   const [users, setUsers] = useState([]);
@@ -109,7 +110,7 @@ const RequestForm = ({ user }) => {
     requestGyroscopePermission();
   };
 
-  const confirmSladesh = async (requestId) => {
+  const confirmSladesh = async () => {
     if (isSending) return;
     setIsSending(true);
     setShowPopup(false);
@@ -138,9 +139,23 @@ const RequestForm = ({ user }) => {
             if (canIncrement) {
                 await setDoc(senderDocRef, { lastSladesh: now }, { merge: true });
 
-                // Now create a request after confirming the Sladesh
+                // Create the request and handle the requestId properly
                 const requestId = await createSingleRequest();
-                await updateRequestStatus(requestId, 'completed');  // Update the status after completion
+                if (requestId) {
+                    await updateRequestStatus(requestId, 'completed');  // Ensure the requestId is passed correctly
+                } else {
+                    throw new Error('Failed to create request, requestId is invalid.');
+                }
+
+                // Trigger a phone vibration upon successful Sladesh
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);  // Vibrates for 200ms
+                }
+
+                // Play sound
+                playSound();
+
+                setSuccess('Sladesh completed with sound!');
             } else {
                 setError('Sladesh already counted for this session.');
             }
@@ -154,18 +169,18 @@ const RequestForm = ({ user }) => {
   };
 
   const createSingleRequest = async () => {
-      try {
-          const docRef = await createRequest({
-              sender: user.displayName,
-              recipient: selectedUser.username,
-              message: `Sladesh by ${user.displayName}`,
-          });
-          showConfirmationPopup();
-          setSuccess('Sladesh sent successfully!');
-          return docRef.id;  // Return the request ID
-      } catch (error) {
-          console.error("Failed to create request:", error);
-      }
+    try {
+      const docRef = await createRequest({
+        sender: user.displayName,
+        recipient: selectedUser.username,
+        message: `Sladesh by ${user.displayName}`,
+      });
+      showConfirmationPopup();
+      setSuccess('Sladesh sent successfully!');
+      return docRef.id;  // Return the request ID
+    } catch (error) {
+      console.error("Failed to create request:", error);
+    }
   };
 
   const showConfirmationPopup = () => {
@@ -174,6 +189,11 @@ const RequestForm = ({ user }) => {
     setTimeout(() => {
       setShowConfirmation(false);
     }, 3000);
+  };
+
+  const playSound = () => {
+    const audio = new Audio(sladeshSound);  // Create a new Audio object with the imported sound
+    audio.play();
   };
 
   const toggleUserSelection = (user) => {
