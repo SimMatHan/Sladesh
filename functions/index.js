@@ -494,21 +494,3 @@ exports.updateTopUsers = functions.pubsub.schedule('30 0 * * *') // Runs every m
     console.log('Updated overall top users:', overallTopThree);
     return null;
   });
-
-// Function to initialize checkInsAtStartOfMonth and sladeshesAtStartOfMonth for all users
-exports.initializeStartOfMonthFields = functions.pubsub.schedule('once').onRun(async (context) => {
-  const usersSnapshot = await db.collection('users').get();
-
-  usersSnapshot.forEach(doc => {
-    const data = doc.data();
-
-    // Set checkInsAtStartOfMonth and sladeshesAtStartOfMonth to current values of checkInCount and totalSladeshes
-    db.collection('users').doc(doc.id).update({
-      checkInsAtStartOfMonth: data.checkInCount,
-      sladeshesAtStartOfMonth: data.totalSladeshes
-    });
-  });
-
-  console.log('Initialized start of month fields for all users.');
-  return null;
-});
