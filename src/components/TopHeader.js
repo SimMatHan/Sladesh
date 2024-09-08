@@ -10,8 +10,8 @@ const TopHeader = ({ sladeshCount }) => {
   return (
     <header className="top-header-container">
       <div className="top-header-content">
-          <div className="logo-text">Sladesh!</div> {/* Logo as text */}
-        <Link to="/sladesh-hub">
+        <div className="logo-text">Sladesh!</div> {/* Logo as text */}
+        <Link to="/sladesh-hub" className="nav-item">
           <div className="nav-icon-container">
             <img
               src={location.pathname === '/sladesh-hub' ? SladeshHubFilled : SladeshHub}
@@ -22,6 +22,7 @@ const TopHeader = ({ sladeshCount }) => {
               <div className="notification-circle">{sladeshCount}</div>
             )}
           </div>
+          <span className="nav-text">Inbox</span> {/* Add the text for Inbox */}
         </Link>
       </div>
     </header>

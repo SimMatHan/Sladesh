@@ -134,7 +134,7 @@ exports.aggregateBeverageData = functions.pubsub.schedule('00 11 * * *') // Run 
       let totalShots = 0;
       let totalDrinks = 0;
 
-      // Calculate the totals
+      // Calculate the totals for the day
       usersSnapshot.forEach(doc => {
         const data = doc.data();
 
@@ -163,11 +163,20 @@ exports.aggregateBeverageData = functions.pubsub.schedule('00 11 * * *') // Run 
 
       if (statsDoc.exists) {
         const statsData = statsDoc.data();
+        // Accumulate the data for the current month
+        const previousMonthData = statsData[monthYear] || { beer: 0, wine: 0, shots: 0, drinks: 0 };
+
         totalDrinksData = {
           ...statsData,
-          ...totalDrinksData
+          [monthYear]: {
+            beer: previousMonthData.beer + totalBeer,
+            wine: previousMonthData.wine + totalWine,
+            shots: previousMonthData.shots + totalShots,
+            drinks: previousMonthData.drinks + totalDrinks,
+          }
         };
       }
+
       await statsRef.set(totalDrinksData, { merge: true });
       console.log(`Updated monthly totals for ${monthYear}`);
 

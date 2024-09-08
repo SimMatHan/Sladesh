@@ -26,11 +26,26 @@
   gap: 35px;
 }
 
+.nav-item {
+  display: flex;
+  flex-direction: column;  /* Align icon and text vertically */
+  align-items: center;     /* Center align both text and icon */
+  text-decoration: none;   /* Remove underline from links */
+  color: var(--secondary-color); /* Text color */
+}
+
 .nav-icon {
   width: 40px;
   height: 40px;
 }
 
+.nav-text {
+  margin-top: 5px;
+  font-size: 12px; /* Smaller text */
+  color: var(--secondary-color); /* Use secondary color for text */
+}
+
+/* Add the filled icon style (optional) */
 .nav-icon.filled {
   filter: brightness(1.2) saturate(1.5) hue-rotate(15deg);
 }
@@ -64,5 +79,9 @@
   .nav-icon {
     width: 30px;
     height: 30px;
+  }
+
+  .nav-text {
+    font-size: 12px; /* Smaller text on mobile */
   }
 }
