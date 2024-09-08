@@ -49,7 +49,7 @@ const Header = ({ sladeshCount }) => {
               alt="Scoreboard"
               className="nav-icon"
             />
-            <span className="nav-text">Scoreboard</span>
+            <span className="nav-text">Board</span>
           </Link>
           <Link to="/charts" className="nav-item">
             <img

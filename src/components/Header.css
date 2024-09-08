@@ -1,6 +1,6 @@
 .header-container {
   background-color: var(--background-color);
-  padding: 10px 10px 25px 10px;
+  padding: 10px 25px 25px 25px;
   color: var(--secondary-color);
   display: flex;
   border-top: 1px solid #ddd;
@@ -23,7 +23,7 @@
 
 .nav-links {
   display: flex;
-  gap: 35px;
+  gap: 30px;
 }
 
 .nav-item {
@@ -34,40 +34,10 @@
   color: var(--secondary-color); /* Text color */
 }
 
-.nav-icon {
-  width: 40px;
-  height: 40px;
-}
-
 .nav-text {
   margin-top: 5px;
   font-size: 12px; /* Smaller text */
   color: var(--secondary-color); /* Use secondary color for text */
-}
-
-/* Add the filled icon style (optional) */
-.nav-icon.filled {
-  filter: brightness(1.2) saturate(1.5) hue-rotate(15deg);
-}
-
-.nav-icon-container {
-  position: relative;
-}
-
-.notification-circle {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 20px;
-  height: 20px;
-  background-color: var(--error-color); /* Use global error color */
-  color: var(--background-color); /* Use global background color for contrast */
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
 }
 
 /* Responsive styles */
