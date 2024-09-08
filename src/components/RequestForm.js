@@ -60,7 +60,7 @@ const RequestForm = ({ user }) => {
   const handleGyroscope = (event) => {
     const beta = event.beta !== null ? event.beta : 0;
 
-    if (beta < -15 && canSendSladesh && !isSending && !lock) {
+    if (beta < -1 && canSendSladesh && !isSending && !lock) {
       lock = true;
       stopGyroscopeMonitoring();
       setTimeout(() => {
