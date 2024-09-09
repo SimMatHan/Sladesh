@@ -155,7 +155,7 @@ const RequestForm = ({ user }) => {
                 // Play sound
                 playSound();
 
-                setSuccess('Sladesh completed with sound!');
+                setSuccess('Sladesh completed!');
             } else {
                 setError('Sladesh already counted for this session.');
             }
