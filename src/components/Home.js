@@ -3,7 +3,14 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { FaBeer, FaWineGlassAlt, FaCocktail, FaGlassWhiskey } from 'react-icons/fa';
 import './Home.css';
 import { db } from '../firebaseConfig';
-import youSureAboutThatGif from '../assets/yousureaboutthat.gif'; // Import the GIF
+import youSureAboutThatGif from '../assets/gifs/yousureaboutthat.gif'; 
+import CR7DrinkingGif from '../assets/gifs/CR7.gif'; // CR7 gif for 3 wines
+import oBeerMa from '../assets/gifs/Obeerma.jpg';
+import beernieSanders from '../assets/gifs/Beernie Sanders.jpg';
+import beatStab from '../assets/gifs/beatStab.jpg';
+import morebeer from '../assets/gifs/morebeer.jpg';
+import mrLaheyGif from '../assets/gifs/mrlahey.gif';
+
 
 const EXPIRATION_TIME_MS = 30 * 1000; // 30 seconds for testing
 
@@ -24,6 +31,9 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
   const [drinkType, setDrinkType] = useState('');
   const [totalDrinks, setTotalDrinks] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [popupImage, setPopupImage] = useState(null); // Image for the popup
+  const [isConfirmation, setIsConfirmation] = useState(false); // State for confirmation popup
+  const [popupShown, setPopupShown] = useState({}); // Tracks which popups have been shown
 
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem('drinkData'));
@@ -51,6 +61,51 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
 
     fetchTotalDrinks();
   }, [setDrinks, user]);
+
+  useEffect(() => {
+    const beers = drinks.beer || 0;
+    const wines = drinks.wine || 0;
+
+    // Track which popups have already been shown and prevent showing the same one again
+    if (totalDrinks === 10 && !popupShown["totalDrinks10"]) {
+      setShowPopup(true);
+      setPopupImage(morebeer); // CR7 gif for 10 total drinks
+      setPopupShown((prev) => ({ ...prev, totalDrinks10: true }));
+    } else if (totalDrinks === 15 && !popupShown["totalDrinks15"]) {
+      setShowPopup(true);
+      setPopupImage(beatStab); // beatStab for 15 total drinks
+      setPopupShown((prev) => ({ ...prev, totalDrinks15: true }));
+    } else if (beers === 3 && !popupShown["beers3"]) {
+      setShowPopup(true);
+      setPopupImage(beernieSanders); // beernieSanders for 3 beers
+      setPopupShown((prev) => ({ ...prev, beers3: true }));
+    } else if (beers === 5 && !popupShown["beers5"]) {
+      setShowPopup(true);
+      setPopupImage(oBeerMa); // oBeerMa for 5 beers
+      setPopupShown((prev) => ({ ...prev, beers5: true }));
+    } else if (wines === 3 && !popupShown["wines3"]) { // New condition for 3 wines
+      setShowPopup(true);
+      setPopupImage(CR7DrinkingGif); // Show CR7DrinkingGif when 3 wines are reached
+      setPopupShown((prev) => ({ ...prev, wines3: true }));
+    } else if (totalDrinks === 20 && !popupShown["totalDrinks20"]) { // New condition for 3 wines
+      setShowPopup(true);
+      setPopupImage(mrLaheyGif); // Show CR7DrinkingGif when 3 wines are reached
+      setPopupShown((prev) => ({ ...prev, totalDrinks20: true }));
+    }
+    
+
+    // Automatically close the popup after 5 seconds if not a confirmation
+    if (showPopup && popupImage && !isConfirmation) {
+      const timer = setTimeout(() => {
+        setShowPopup(false);
+        setPopupImage(null); // Reset popup image after close
+      }, 5000);
+
+      return () => clearTimeout(timer); // Clear timeout on cleanup
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalDrinks, drinks, popupImage, showPopup]);
 
   const handleAddDrink = (type) => {
     const newDrinks = { ...drinks, [type]: (drinks[type] || 0) + 1 };
@@ -84,6 +139,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
     setDrinks(emptyDrinks);
     setTotalDrinks(0);
     localStorage.removeItem('drinkData');
+    setPopupShown({}); // Reset shown popups on reset
     try {
       await setDoc(doc(db, 'users', user.uid), { drinks: emptyDrinks, totalDrinks: 0 }, { merge: true });
     } catch (error) {
@@ -92,7 +148,9 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
   };
 
   const confirmReset = () => {
+    setIsConfirmation(true); // Indicate it's a confirmation popup
     setShowPopup(true);
+    setPopupImage(youSureAboutThatGif); // Default popup for reset confirmation
   };
 
   const handlePopupResponse = (response) => {
@@ -100,6 +158,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
       handleReset();
     }
     setShowPopup(false);
+    setIsConfirmation(false); // Reset the confirmation state
   };
 
   return (
@@ -129,7 +188,7 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
         <button className="main-button reset-button" onClick={confirmReset}>Reset Your Drink(s)</button>
       </div>
       <ul className="drink-list">
-        {drinkOrder.map((type) => ( // Use the fixed order
+        {drinkOrder.map((type) => (
           drinks[type] > 0 && (
             <li key={type} className="drink-item">
               <div className="drink-icon">{getIcon(type)}</div>
@@ -151,10 +210,15 @@ const Home = ({ user, drinks, setDrinks, onReset }) => {
         <div className="popup-backdrop">
           <div className="popup">
             <div className="popup-content">
-              <img src={youSureAboutThatGif} alt="Are you sure about that?" className="popup-gif" />
-              <p> </p>
-              <button className="popup-button yes-button" onClick={() => handlePopupResponse('yes')}>Yes!</button>
-              <button className="popup-button" onClick={() => handlePopupResponse('no')}>No!</button>
+              {popupImage && <img src={popupImage} alt="Popup" className="popup-gif" />}
+              {isConfirmation ? (
+                <div className="popup-buttons">
+                  <button className="popup-button" onClick={() => handlePopupResponse('yes')}>Yes</button>
+                  <button className="popup-button" onClick={() => handlePopupResponse('no')}>No</button>
+                </div>
+              ) : (
+                <button className="popup-button" onClick={() => setShowPopup(false)}>OK</button>
+              )}
             </div>
           </div>
         </div>

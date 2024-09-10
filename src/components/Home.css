@@ -182,18 +182,27 @@
   z-index: 1000;
   border-radius: 10px;
   width: 90%;
-  max-width: 300px;
+  max-width: 350px; /* Adjusted for mobile phones */
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center;    /* Center content horizontally */
 }
 
 .popup-gif {
   width: 100%;
-  max-width: 200px;
-  margin-bottom: 10px;
+  height: auto;
+  max-width: 250px; /* Consistent width for images and gifs */
+  max-height: 250px; /* Limit height for a consistent appearance */
+  margin-bottom: 20px; /* Adds space between the GIF and the button */
+  object-fit: cover; /* Ensures images fill the space without distortion */
   border-radius: 8px;
 }
 
 .popup-content {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .popup-button {
@@ -204,7 +213,7 @@
   font-size: 14px;
   border-radius: var(--border-radius);
   cursor: pointer;
-  margin: 10px;
+  margin-top: 10px; /* Add margin at the top to separate from the GIF */
   transition: background-color 0.3s ease;
 }
 
@@ -218,4 +227,28 @@
 
 .popup-button.yes-button:hover {
   background-color: var(--accent-color-1);
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Ensure everything is responsive for smaller mobile screens */
+@media (max-width: 600px) {
+  .popup {
+    max-width: 75%; /* Ensures popup doesn't exceed mobile screen width */
+  }
+
+  .popup-gif {
+    max-width: 200px; /* Scale down the image size for smaller screens */
+    max-height: 200px; /* Keep consistent size for small screens */
+  }
+
+  .popup-button {
+    font-size: 12px;
+    padding: 8px 15px; /* Slightly reduce button size for mobile */
+  }
 }
