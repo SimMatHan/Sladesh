@@ -223,8 +223,8 @@ exports.aggregateBeverageData = functions.pubsub.schedule('00 11 * * *') // Run 
     }
   });
 
-// Function to update the most sladeshed user daily
-exports.updateMostSladeshedUser = functions.pubsub.schedule('0 1 * * *') // Runs every day at 1:00 AM
+// Function to update the most sladeshed user daily at 10:05 AM
+exports.updateMostSladeshedUser = functions.pubsub.schedule('5 0 * * *') // Runs every day at 10:05 AM
   .timeZone('Europe/Copenhagen')
   .onRun(async (context) => {
     const usersSnapshot = await db.collection('users').get();
@@ -237,23 +237,24 @@ exports.updateMostSladeshedUser = functions.pubsub.schedule('0 1 * * *') // Runs
     const currentYear = now.getFullYear();
     const monthYear = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
 
-    usersSnapshot.forEach(doc => {
+    // Use Promise.all to handle async operations in parallel
+    const userPromises = usersSnapshot.docs.map(async (doc) => {
       const data = doc.data();
-      const lastSladeshDate = new Date(data.lastSladesh);
-      const lastSladeshMonth = lastSladeshDate.getMonth() + 1;
-      const lastSladeshYear = lastSladeshDate.getFullYear();
 
-      // If it's a new month, reset the sladeshesAtStartOfMonth to the current totalSladeshes
-      if (!data.sladeshesAtStartOfMonth || (lastSladeshYear < currentYear || lastSladeshMonth < currentMonth)) {
-        // Initialize or reset sladeshesAtStartOfMonth for the new month
-        db.collection('users').doc(doc.id).update({
-          sladeshesAtStartOfMonth: data.totalSladeshes
-        });
-        data.sladeshesAtStartOfMonth = data.totalSladeshes;
+      // Ensure that totalSladeshes and sladeshesAtStartOfMonth are initialized
+      const totalSladeshes = data.totalSladeshes ?? 0;
+      let sladeshesAtStartOfMonth = data.sladeshesAtStartOfMonth ?? totalSladeshes;
+
+      // If it's a new month, reset sladeshesAtStartOfMonth
+      const lastSladeshDate = data.lastSladesh ? data.lastSladesh.toDate() : new Date();
+      if (lastSladeshDate.getMonth() + 1 !== currentMonth || lastSladeshDate.getFullYear() !== currentYear) {
+        // Reset sladeshesAtStartOfMonth for the new month
+        sladeshesAtStartOfMonth = totalSladeshes;
+        await doc.ref.update({ sladeshesAtStartOfMonth: totalSladeshes });
       }
 
-      // Calculate sladeshes for the current month
-      const sladeshesThisMonth = data.totalSladeshes - data.sladeshesAtStartOfMonth;
+      // Set the current month's sladeshes from sladeshesAtStartOfMonth
+      const sladeshesThisMonth = sladeshesAtStartOfMonth;
 
       // Update most sladeshed user for this month
       if (sladeshesThisMonth > mostSladeshedUserThisMonth.totalSladeshes) {
@@ -263,32 +264,35 @@ exports.updateMostSladeshedUser = functions.pubsub.schedule('0 1 * * *') // Runs
         };
       }
 
-      // Update the overall most sladeshed user
-      if (data.totalSladeshes > overallMostSladeshedUser.totalSladeshes) {
+      // Update overall most sladeshed user
+      if (totalSladeshes > overallMostSladeshedUser.totalSladeshes) {
         overallMostSladeshedUser = {
           username: data.username,
-          totalSladeshes: data.totalSladeshes
+          totalSladeshes: totalSladeshes
         };
       }
     });
 
-    // Store the most sladeshed user for the current month in Firestore
+    // Wait for all user updates to complete
+    await Promise.all(userPromises);
+
+    // Store the most sladeshed user and totals for the current month in Firestore
     const mostSladeshedUserRef = db.collection('statistics').doc('mostSladeshedUser');
     await mostSladeshedUserRef.set({
-      [monthYear]: mostSladeshedUserThisMonth
-    }, { merge: true });
-
-    // Update the overall stats with the correct user
-    await mostSladeshedUserRef.set({
-      overall: overallMostSladeshedUser
+      [monthYear]: {
+        totalSladeshes: mostSladeshedUserThisMonth.totalSladeshes, // Current month sladeshes
+        username: mostSladeshedUserThisMonth.username
+      },
+      overall: {
+        totalSladeshes: overallMostSladeshedUser.totalSladeshes,  // Overall sladeshes
+        username: overallMostSladeshedUser.username
+      }
     }, { merge: true });
 
     console.log('Updated most sladeshed user for the month:', monthYear);
     console.log('Updated overall most sladeshed user:', overallMostSladeshedUser);
     return null;
   });
-
-
 
 
 // Function to increment sladesh count on sladesh creation and update total sladeshes
@@ -347,72 +351,86 @@ exports.incrementCheckInCount = functions.firestore
     return null;
   });
 
-// Function to update the most checked-in user daily
-exports.updateMostCheckedInUser = functions.pubsub.schedule('0 0 * * *') // Runs every day at 1:00 AM
-  .timeZone('Europe/Copenhagen')
-  .onRun(async (context) => {
-    const usersSnapshot = await db.collection('users').get();
+// Function to update the most checked-in user daily at 10:05 AM
+exports.updateMostCheckedInUser = functions.pubsub.schedule('5 0 * * *') // Runs every day at 10:05 AM
+.timeZone('Europe/Copenhagen')
+.onRun(async (context) => {
+  const usersSnapshot = await db.collection('users').get();
 
-    let mostCheckedInUserThisMonth = { username: '', totalCheckIns: 0 };
-    let overallMostCheckedInUser = { username: '', totalCheckIns: 0 };
+  let mostCheckedInUserThisMonth = { username: '', totalCheckIns: 0 };
+  let overallMostCheckedInUser = { username: '', totalCheckIns: 0 };
 
-    const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
-    const monthYear = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const monthYear = `${currentYear}-${String(currentMonth).padStart(2, '0')}`; // Format as YYYY-MM
 
-    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  // Use Promise.all to handle async operations in parallel
+  const userPromises = usersSnapshot.docs.map(async (doc) => {
+    const data = doc.data();
 
-    usersSnapshot.forEach(doc => {
-      const data = doc.data();
-      const lastCheckInDate = new Date(data.lastCheckIn);
-      const lastCheckInMonth = lastCheckInDate.getMonth() + 1;
-      const lastCheckInYear = lastCheckInDate.getFullYear();
+    // Ensure that checkInCount and checkInsAtStartOfMonth are initialized
+    const checkInCount = data.checkInCount ?? 0;
+    let checkInsAtStartOfMonth = data.checkInsAtStartOfMonth ?? checkInCount;
 
-      // If it's a new month, reset the checkInsAtStartOfMonth to the current checkInCount
-      if (!data.checkInsAtStartOfMonth || (lastCheckInYear < currentYear || lastCheckInMonth < currentMonth)) {
-        // Initialize or reset checkInsAtStartOfMonth for the new month
-        db.collection('users').doc(doc.id).update({
-          checkInsAtStartOfMonth: data.checkInCount
-        });
-        data.checkInsAtStartOfMonth = data.checkInCount;
-      }
+    // If it's a new month, reset checkInsAtStartOfMonth
+    const lastCheckInDate = data.lastCheckIn ? data.lastCheckIn.toDate() : new Date();
+    if (lastCheckInDate.getMonth() + 1 !== currentMonth || lastCheckInDate.getFullYear() !== currentYear) {
+      // Reset checkInsAtStartOfMonth for the new month
+      checkInsAtStartOfMonth = checkInCount;
+      await doc.ref.update({ checkInsAtStartOfMonth: checkInCount });
+    }
 
-      // Calculate check-ins for the current month
-      const checkInsThisMonth = data.checkInCount - data.checkInsAtStartOfMonth;
+    // Calculate check-ins for the current month using checkInsAtStartOfMonth
+    const checkInsThisMonth = checkInCount - checkInsAtStartOfMonth;
 
-      // Update most checked-in user for this month
-      if (checkInsThisMonth > mostCheckedInUserThisMonth.totalCheckIns) {
-        mostCheckedInUserThisMonth = {
-          username: data.username,
-          totalCheckIns: checkInsThisMonth
-        };
-      }
+    // Get reference to the statistics document
+    const monthDataRef = db.collection('statistics').doc('mostCheckedInUser');
+    const monthDataDoc = await monthDataRef.get();
+    const monthData = monthDataDoc.exists ? monthDataDoc.data() : {};
 
-      // Update the overall most checked-in user
-      if (data.checkInCount > overallMostCheckedInUser.totalCheckIns) {
-        overallMostCheckedInUser = {
-          username: data.username,
-          totalCheckIns: data.checkInCount
-        };
-      }
-    });
+    const prevMonthTotal = (monthData[monthYear]?.totalCheckIns || 0); // Total already recorded for the month
 
-    // Store the most checked-in user for the current month in Firestore
-    const mostCheckedInUserRef = db.collection('statistics').doc('mostCheckedInUser');
-    await mostCheckedInUserRef.set({
-      [monthYear]: mostCheckedInUserThisMonth
-    }, { merge: true });
+    // Final monthly check-ins should include any previous values plus new ones
+    const finalCheckInsThisMonth = prevMonthTotal + checkInsThisMonth;
 
-    // Update the overall stats with the correct user
-    await mostCheckedInUserRef.set({
-      overall: overallMostCheckedInUser
-    }, { merge: true });
+    // Update most checked-in user for this month using checkInsAtStartOfMonth
+    if (checkInsAtStartOfMonth > mostCheckedInUserThisMonth.totalCheckIns) {
+      mostCheckedInUserThisMonth = {
+        username: data.username,
+        totalCheckIns: checkInsAtStartOfMonth
+      };
+    }
 
-    console.log('Updated most checked-in user for the month:', monthYear);
-    console.log('Updated overall most checked-in user:', overallMostCheckedInUser);
-    return null;
+    // Update overall most checked-in user
+    if (checkInCount > overallMostCheckedInUser.totalCheckIns) {
+      overallMostCheckedInUser = {
+        username: data.username,
+        totalCheckIns: checkInCount
+      };
+    }
   });
+
+  // Wait for all user updates to complete
+  await Promise.all(userPromises);
+
+  // Store the most checked-in user and totals for the current month in Firestore
+  const mostCheckedInUserRef = db.collection('statistics').doc('mostCheckedInUser');
+  await mostCheckedInUserRef.set({
+    [monthYear]: {
+      totalCheckIns: mostCheckedInUserThisMonth.totalCheckIns,
+      username: mostCheckedInUserThisMonth.username
+    },
+    overall: {
+      totalCheckIns: overallMostCheckedInUser.totalCheckIns,
+      username: overallMostCheckedInUser.username
+    }
+  }, { merge: true });
+
+  console.log('Updated most checked-in user for the month:', monthYear);
+  console.log('Updated overall most checked-in user:', overallMostCheckedInUser);
+  return null;
+});
 
 
 // Function to update the top users daily
