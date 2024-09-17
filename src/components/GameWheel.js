@@ -1,67 +1,47 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import './GameWheel.css';
-import { doc, updateDoc, getDoc } from 'firebase/firestore'; // Import getDoc to fetch user data
+import { doc, updateDoc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
+// Outcomes array (reverted to equal spacing)
 const outcomes = [
-  { id: 1, spinText:'CHUG A DRINK', text: 'Drink a whole beer!', action: 'drink_beer' },
-  { id: 2, spinText:'Sladesh back!', text: 'Get your Sladesh back!', action: 'get_sladesh' },
-  { id: 3, spinText:'Nothing!', text: 'Nothing! You\'re safe... for now.', action: 'nothing' },
-  { id: 4, spinText:'Beer Run!', text: 'Beer Run! Time to get the next round.', action: 'beer_run' },
+  { id: 1, spinText: 'CHUG YOUR DRINK', text: 'Drink your entire drink!', action: 'drink_beer' },
+  { id: 2, spinText: 'Sladesh back!', text: 'Get your Sladesh back!', action: 'get_sladesh' },
+  { id: 3, spinText: 'Sladesh for a Friend!', text: 'Give a random user a Sladesh back!', action: 'random_sladesh' },
+  { id: 4, spinText: 'Beer Run!', text: 'Beer Run! Time to get the next round.', action: 'beer_run' },
 ];
 
+// Set up equal arc spacing for each outcome
 const sectors = outcomes.map((outcome, index) => {
   const colors = ['#d3d2c1', '#87643d', '#d4e653', '#a8a793'];
-  return { color: colors[index % colors.length], label: outcome.spinText, action: outcome.action };
+  return { 
+    color: colors[index % colors.length], 
+    label: outcome.spinText, 
+    action: outcome.action,
+  };
 });
 
 const rand = (m, M) => Math.random() * (M - m) + m;
 const PI = Math.PI;
 const TAU = 2 * PI;
-// Increased friction to slow the wheel down faster
-const friction = 0.985; // Adjusted for a faster slow down
+const friction = 0.985;
 
 const MAX_SPINS_PER_DAY = 5;
 
 const GameWheel = ({ user }) => {
-  const [angVel, setAngVel] = useState(0); // Angular velocity
-  const [ang, setAng] = useState(0); // Angle in radians
-  const [isSpinning, setIsSpinning] = useState(false); // Spinning state
-  const [selectedOutcome, setSelectedOutcome] = useState(''); // Outcome display state
-  const [remainingSpins, setRemainingSpins] = useState(MAX_SPINS_PER_DAY); // Track remaining spins
+  const [angVel, setAngVel] = useState(0);
+  const [ang, setAng] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [selectedOutcome, setSelectedOutcome] = useState('');
+  const [remainingSpins, setRemainingSpins] = useState(MAX_SPINS_PER_DAY);
+  const [sladeshMessage, setSladeshMessage] = useState(''); // New state for displaying Sladesh messages
   const canvasRef = useRef(null);
   const spinRef = useRef(null);
   const requestRef = useRef(null);
 
+  // Each sector will have an equal arc size
   const tot = sectors.length;
   const arc = TAU / tot;
-
-  useEffect(() => {
-    if (user && user.uid) {
-      const fetchUserData = async () => {
-        const userDocRef = doc(db, 'users', user.uid);
-        const docSnapshot = await getDoc(userDocRef);
-
-        if (docSnapshot.exists()) {
-          const userData = docSnapshot.data();
-          const lastSpinDate = userData.lastSpinDate ? userData.lastSpinDate.toDate() : null;
-          const today = new Date();
-          const isSameDay = lastSpinDate && lastSpinDate.toDateString() === today.toDateString();
-
-          if (isSameDay) {
-            setRemainingSpins(userData.remainingSpins);
-          } else {
-            setRemainingSpins(MAX_SPINS_PER_DAY);
-            await updateDoc(userDocRef, { remainingSpins: MAX_SPINS_PER_DAY, lastSpinDate: today });
-          }
-        } else {
-          await updateDoc(userDocRef, { remainingSpins: MAX_SPINS_PER_DAY, lastSpinDate: new Date() });
-        }
-      };
-
-      fetchUserData();
-    }
-  }, [user]);
 
   const getIndex = useCallback(() => {
     return Math.floor(tot - (ang / TAU) * tot) % tot;
@@ -92,49 +72,70 @@ const GameWheel = ({ user }) => {
   const rotate = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-
     ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
   }, [ang]);
 
   const handleOutcome = useCallback(async () => {
     const sector = sectors[getIndex()];
-    setSelectedOutcome(sector.label); // Update the displayed outcome
-    console.log('Selected outcome:', sector.label);
+    setSelectedOutcome(sector.label);
 
     switch (sector.action) {
       case 'get_sladesh':
-        console.log('Action: Get your Sladesh back!');
         if (user && user.uid) {
           const userDocRef = doc(db, 'users', user.uid);
-          try {
-            await updateDoc(userDocRef, { lastSladesh: null });
-            console.log('lastSladesh reset to null in Firebase');
-          } catch (error) {
-            console.error('Error updating lastSladesh:', error);
-          }
+          await updateDoc(userDocRef, { lastSladesh: null });
+          setSladeshMessage('You got your Sladesh back!'); // Sladesh back for the current user
         }
         break;
 
-      case 'drink_beer':
-        console.log('Action: Drink a whole beer!');
-        // Logic for drinking a whole beer
+      case 'random_sladesh':
+        const message = await giveRandomUserSladeshBack();
+        setSladeshMessage(message); // Display message after random Sladesh is given
         break;
 
-      case 'nothing':
-        console.log('Action: Nothing! You\'re safe... for now.');
-        // No additional logic needed for "nothing"
+      case 'drink_beer':
+        setSladeshMessage('Drink a whole beer!');
         break;
 
       case 'beer_run':
-        console.log('Action: Beer Run! Time to get the next round.');
-        // Logic for beer run - maybe prompt the user to fetch drinks
+        setSladeshMessage('Beer Run! Time to get the next round.');
         break;
 
       default:
-        console.log('Unknown action');
         break;
     }
   }, [getIndex, user]);
+
+  const giveRandomUserSladeshBack = async () => {
+    try {
+      const usersCollection = collection(db, 'users');
+      const querySnapshot = await getDocs(usersCollection);
+      const checkedInUsers = [];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.checkedIn) {
+          checkedInUsers.push({ id: doc.id, ...data });
+        }
+      });
+
+      if (checkedInUsers.length > 0) {
+        const randomIndex = Math.floor(Math.random() * checkedInUsers.length);
+        const randomUser = checkedInUsers[randomIndex];
+
+        const randomUserDocRef = doc(db, 'users', randomUser.id);
+        await updateDoc(randomUserDocRef, { lastSladesh: new Date() });
+
+        console.log(`Sladesh given back to: ${randomUser.username}`);
+        return `Sladesh back to ${randomUser.username}!`; // Return the name of the user who got the Sladesh back
+      } else {
+        return 'No users are checked in.'; // Return message if no users are checked in
+      }
+    } catch (error) {
+      console.error('Error giving random user a Sladesh back:', error);
+      return 'Error occurred while giving Sladesh back.';
+    }
+  };
 
   const frame = useCallback(() => {
     if (!angVel) return;
@@ -143,13 +144,13 @@ const GameWheel = ({ user }) => {
       const newVel = prevVel * friction;
       if (newVel < 0.002) {
         setIsSpinning(false);
-        handleOutcome(); // Trigger outcome handling
-        return 0; // Stop the rotation
+        handleOutcome();
+        return 0;
       }
       return newVel;
     });
 
-    setAng(prevAng => (prevAng + angVel) % TAU); // Update angle
+    setAng(prevAng => (prevAng + angVel) % TAU);
     rotate();
   }, [angVel, rotate, handleOutcome]);
 
@@ -164,42 +165,24 @@ const GameWheel = ({ user }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     sectors.forEach((sector, i) => drawSector(ctx, sector, i));
-    rotate(); // Initial rotation
+    rotate();
   }, [drawSector, rotate]);
 
   const handleSpin = async () => {
     if (!isSpinning && remainingSpins > 0) {
       setIsSpinning(true);
-      // Increase initial angular velocity for a quicker spin
-      setAngVel(rand(0.3, 0.5)); // Adjusted for a faster start
-      setSelectedOutcome(''); // Clear the outcome when spinning starts
-
-      // Update remaining spins
+      setAngVel(rand(0.3, 0.5));
+      setSelectedOutcome('');
+      setSladeshMessage(''); // Clear the message when spinning starts
       const newRemainingSpins = remainingSpins - 1;
       setRemainingSpins(newRemainingSpins);
 
       if (user && user.uid) {
         const userDocRef = doc(db, 'users', user.uid);
-        try {
-          await updateDoc(userDocRef, { remainingSpins: newRemainingSpins, lastSpinDate: new Date() });
-        } catch (error) {
-          console.error('Error updating remaining spins:', error);
-        }
+        await updateDoc(userDocRef, { remainingSpins: newRemainingSpins, lastSpinDate: new Date() });
       }
     }
   };
-
-  // Add the conditional text logic before the return statement
-  let outcomeMessage = '';
-  if (selectedOutcome === 'Beer Run!') {
-    outcomeMessage = 'Beer Run! Time to get the next round.';
-  } else if (selectedOutcome === 'CHUG A DRINK') {
-    outcomeMessage = 'Drink a whole beer!';
-  } else if (selectedOutcome === 'Sladesh back!') {
-    outcomeMessage = 'Get your Sladesh back!';
-  } else if (selectedOutcome === 'Nothing!') {
-    outcomeMessage = 'Nothing! You\'re safe... for now.';
-  }
 
   return (
     <div className="game-wheel-container">
@@ -211,10 +194,10 @@ const GameWheel = ({ user }) => {
         <div id="spin" ref={spinRef} onClick={handleSpin}>
           SPIN
         </div>
-        <div id="top-pointer"></div> {/* This is the pointer at the top of the wheel */}
+        <div id="top-pointer"></div>
       </div>
       <div className="outcome-display">
-        {outcomeMessage}
+        {sladeshMessage || selectedOutcome} {/* Display either the Sladesh message or the outcome */}
       </div>
     </div>
   );
